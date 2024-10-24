@@ -1,12 +1,15 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
+import com.hazelcast.mapreduce.JobCompletableFuture;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
@@ -16,6 +19,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -56,18 +61,18 @@ public class Client {
 
             // MapReduce Job
             Job<String, String> job = jobTracker.newJob(wordsKeyValueSource);
-//            ICompletableFuture<Map<String, String>> future = job
-//                    .mapper(new TokenizerMapper2())
-//                    .reducer(new WordCountReducerFactory2())
-//                    .submit();
+            JobCompletableFuture<Map<String, Long>> future = job
+                    .mapper(new TokenizerMapper())
+                    .reducer(new WordCountReducerFactory())
+                    .submit();
 
             // Wait and retrieve the result
-//            Map<String, String> result = future.get();
+            Map<String, Long> result = future.get();
 
             // Sort entries ascending by count and print
-//            result.entrySet().stream()
-//                    .sorted((Map.Entry.<String, String>comparingByValue()))
-//                    .forEach(System.out::println);
+            result.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .forEach(entry -> logger.info(entry.getKey() + ": " + entry.getValue()));
         } finally {
             HazelcastClient.shutdownAll();
         }
