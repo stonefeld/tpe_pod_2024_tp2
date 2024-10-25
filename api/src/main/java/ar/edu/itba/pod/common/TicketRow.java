@@ -10,13 +10,13 @@ import java.time.LocalDate;
 public class TicketRow implements DataSerializable {
 
     private String plateId, infractionId, agency, county;
-    private double amount;
+    private int amount;
     private LocalDate issueDate;
 
     public TicketRow() {
     }
 
-    public TicketRow(String plateId, String infractionId, String agency, String county, double amount, LocalDate issueDate) {
+    public TicketRow(String plateId, String infractionId, String agency, String county, int amount, LocalDate issueDate) {
         this.plateId = plateId;
         this.infractionId = infractionId;
         this.agency = agency;
@@ -41,7 +41,7 @@ public class TicketRow implements DataSerializable {
         return county;
     }
 
-    public double getAmount() {
+    public int getAmount() {
         return amount;
     }
 
@@ -55,7 +55,7 @@ public class TicketRow implements DataSerializable {
         out.writeUTF(infractionId);
         out.writeUTF(agency);
         out.writeUTF(county);
-        out.writeDouble(amount);
+        out.writeInt(amount);
         out.writeObject(issueDate);
     }
 
@@ -65,7 +65,7 @@ public class TicketRow implements DataSerializable {
         infractionId = in.readUTF();
         agency = in.readUTF();
         county = in.readUTF();
-        amount = in.readDouble();
+        amount = in.readInt();
         issueDate = in.readObject();
     }
 }

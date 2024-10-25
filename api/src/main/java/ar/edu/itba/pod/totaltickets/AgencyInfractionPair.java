@@ -4,6 +4,8 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
+import java.util.Objects;
+
 public class AgencyInfractionPair implements DataSerializable {
     private String agency;
     private String infractionId;
@@ -43,6 +45,6 @@ public class AgencyInfractionPair implements DataSerializable {
 
     @Override
     public int hashCode() {
-        return agency.hashCode() + infractionId.hashCode();
+        return Objects.hash(agency, infractionId);
     }
 }

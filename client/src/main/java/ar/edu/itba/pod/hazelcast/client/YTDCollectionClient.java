@@ -5,6 +5,10 @@ import ar.edu.itba.pod.totaltickets.TotalTicketsCollator;
 import ar.edu.itba.pod.totaltickets.TotalTicketsMapper;
 import ar.edu.itba.pod.totaltickets.TotalTicketsReducerFactory;
 import ar.edu.itba.pod.totaltickets.TotalTicketsResult;
+import ar.edu.itba.pod.ytdcollection.YTDCollectionCollator;
+import ar.edu.itba.pod.ytdcollection.YTDCollectionMapper;
+import ar.edu.itba.pod.ytdcollection.YTDCollectionReducerFactory;
+import ar.edu.itba.pod.ytdcollection.YTDCollectionResult;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -24,17 +28,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class TotalTicketsClient {
+public class YTDCollectionClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(TotalTicketsClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(YTDCollectionClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        logger.info("Total Tickets Client Starting ...");
+        logger.info("YTD Collection Client Starting ...");
 
 //        final String addresses = System.getProperty("addresses", "");
 //        final String city = System.getProperty("city", "");
@@ -81,7 +88,7 @@ public class TotalTicketsClient {
             KeyValueSource<String, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("ticket-count");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("ytd-collection");
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(args[0]), StandardCharsets.UTF_8)) {
@@ -99,18 +106,18 @@ public class TotalTicketsClient {
 
             // MapReduce Job
             Job<String, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
-            JobCompletableFuture<SortedSet<TotalTicketsResult>> future = job
-                    .mapper(new TotalTicketsMapper())
-                    .reducer(new TotalTicketsReducerFactory())
-                    .submit(new TotalTicketsCollator());
+            JobCompletableFuture<SortedSet<YTDCollectionResult>> future = job
+                    .mapper(new YTDCollectionMapper())
+                    .reducer(new YTDCollectionReducerFactory())
+                    .submit(new YTDCollectionCollator());
 
             // Wait and retrieve the result
-            SortedSet<TotalTicketsResult> result = future.get();
+            SortedSet<YTDCollectionResult> result = future.get();
 
             // Sort entries ascending by count and print
-            String header = "Infraction;Agency;Ticket";
+            String header = "Agency;Year;Month;YTD";
             String fileName = "output.csv";
-            Function<TotalTicketsResult, String> csvLineMapper = TotalTicketsResult::toString;
+            Function<YTDCollectionResult, String> csvLineMapper = YTDCollectionResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
         } finally {
