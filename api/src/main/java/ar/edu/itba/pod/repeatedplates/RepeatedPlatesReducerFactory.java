@@ -30,7 +30,7 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
 
         @Override
         public Double finalizeReduce() {
-            double toTruncate = (map.values().stream().filter(value -> value > 1).count() / (double) map.size()) * 100;
+            double toTruncate = (map.values().stream().filter(value -> value >= 2).count() / (double) map.size()) * 100;
             return Math.floor(toTruncate * 100) / 100;
         }
     }

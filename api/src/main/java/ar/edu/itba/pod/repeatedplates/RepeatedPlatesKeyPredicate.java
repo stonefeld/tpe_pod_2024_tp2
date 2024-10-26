@@ -1,7 +1,5 @@
 package ar.edu.itba.pod.repeatedplates;
 
-import ar.edu.itba.pod.common.TicketRow;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.KeyPredicate;
 
 import java.time.LocalDate;
