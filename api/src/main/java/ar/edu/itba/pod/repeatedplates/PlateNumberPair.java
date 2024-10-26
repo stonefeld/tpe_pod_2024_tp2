@@ -5,6 +5,7 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class PlateNumberPair implements DataSerializable {
     private String plate;
@@ -45,6 +46,6 @@ public class PlateNumberPair implements DataSerializable {
 
     @Override
     public int hashCode() {
-        return plate.hashCode();
+        return Objects.hash(plate, count);
     }
 }

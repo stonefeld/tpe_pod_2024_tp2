@@ -7,14 +7,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RepeatedPlatesReducerFactory implements ReducerFactory<String, PlateNumberPair, Double> {
+    private final int n;
+
+    public RepeatedPlatesReducerFactory(int n) {
+        this.n = n;
+    }
 
     @Override
     public Reducer<PlateNumberPair, Double> newReducer(String key) {
-        return new RepeatedPlatesReducer();
+        return new RepeatedPlatesReducer(n);
     }
 
     private static class RepeatedPlatesReducer extends Reducer<PlateNumberPair, Double> {
         private final Map<String, Long> map = new HashMap<>();
+        private final int n;
+
+        public RepeatedPlatesReducer(int n) {
+            this.n = n;
+        }
 
         @Override
         public void reduce(PlateNumberPair value) {
@@ -30,7 +40,7 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
 
         @Override
         public Double finalizeReduce() {
-            double toTruncate = (map.values().stream().filter(value -> value >= 2).count() / (double) map.size()) * 100;
+            double toTruncate = (map.values().stream().filter(value -> value >= n).count() / (double) map.size()) * 100;
             return Math.floor(toTruncate * 100) / 100;
         }
     }
