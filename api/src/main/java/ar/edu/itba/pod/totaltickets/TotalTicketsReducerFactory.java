@@ -11,6 +11,7 @@ public class TotalTicketsReducerFactory implements ReducerFactory<AgencyInfracti
     }
 
     private static class TotalTicketsReducer extends Reducer<Long, Long> {
+
         private long count = 0L;
 
         @Override
@@ -22,5 +23,7 @@ public class TotalTicketsReducerFactory implements ReducerFactory<AgencyInfracti
         public Long finalizeReduce() {
             return count;
         }
+
     }
+
 }

@@ -1,10 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.common.TicketRow;
-import ar.edu.itba.pod.totaltickets.TotalTicketsCollator;
-import ar.edu.itba.pod.totaltickets.TotalTicketsMapper;
-import ar.edu.itba.pod.totaltickets.TotalTicketsReducerFactory;
-import ar.edu.itba.pod.totaltickets.TotalTicketsResult;
 import ar.edu.itba.pod.ytdcollection.YTDCollectionCollator;
 import ar.edu.itba.pod.ytdcollection.YTDCollectionMapper;
 import ar.edu.itba.pod.ytdcollection.YTDCollectionReducerFactory;
@@ -36,52 +32,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class YTDCollectionClient {
+public class YTDCollectionClient extends Client {
 
     private static final Logger logger = LoggerFactory.getLogger(YTDCollectionClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         logger.info("YTD Collection Client Starting ...");
 
-//        final String addresses = System.getProperty("addresses", "");
-//        final String city = System.getProperty("city", "");
-//        final String inPath = System.getProperty("inPath", "");
-//        final String outPath = System.getProperty("outPath", "");
-//
-//
-//        if (addresses.isEmpty()) {
-//            System.out.println("IP addresses are required");
-//            return;
-//        }
-//
-//        if (city.compareTo("NYC") != 0 && city.compareTo("CHI") != 0) {
-//            System.out.println("City is required");
-//            return;
-//        }
-//
-//        if (inPath.isEmpty()) {
-//            System.out.println("Input path is required");
-//            return;
-//        }
-//
-//        if (outPath.isEmpty()) {
-//            System.out.println("Output path is required");
-//            return;
-//        }
-
         try {
-            // Group Config
-            GroupConfig groupConfig = new GroupConfig().setName("l12345").setPassword("l12345-pass");
-
-            // Client Network Config
-            ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
-            clientNetworkConfig.addAddress("127.0.0.1");
-
-            // Client Config
-            ClientConfig clientConfig = new ClientConfig().setGroupConfig(groupConfig).setNetworkConfig(clientNetworkConfig);
+            // Parse all properties
+            processProperties();
 
             // Node Client
-            HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
+            HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
             MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
@@ -123,17 +86,6 @@ public class YTDCollectionClient {
         } finally {
             HazelcastClient.shutdownAll();
         }
-    }
-
-    private static <T> void writeToCSV(String fileName, String header, Iterator<T> dataList, Function<T, String> csvLineMapper) throws IOException {
-        List<String> lines = new ArrayList<>();
-        lines.add(header);
-
-        while (dataList.hasNext()) {
-            lines.add(csvLineMapper.apply(dataList.next()));
-        }
-
-        Files.write(Paths.get(fileName), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
 }

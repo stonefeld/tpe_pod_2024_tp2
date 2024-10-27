@@ -6,10 +6,8 @@ import ar.edu.itba.pod.totaltickets.TotalTicketsMapper;
 import ar.edu.itba.pod.totaltickets.TotalTicketsReducerFactory;
 import ar.edu.itba.pod.totaltickets.TotalTicketsResult;
 import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.client.config.ClientNetworkConfig;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobCompletableFuture;
@@ -22,90 +20,76 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class TotalTicketsClient {
+public class TotalTicketsClient extends Client {
 
     private static final Logger logger = LoggerFactory.getLogger(TotalTicketsClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         logger.info("Total Tickets Client Starting ...");
 
-//        final String addresses = System.getProperty("addresses", "");
-//        final String city = System.getProperty("city", "");
-//        final String inPath = System.getProperty("inPath", "");
-//        final String outPath = System.getProperty("outPath", "");
-//
-//
-//        if (addresses.isEmpty()) {
-//            System.out.println("IP addresses are required");
-//            return;
-//        }
-//
-//        if (city.compareTo("NYC") != 0 && city.compareTo("CHI") != 0) {
-//            System.out.println("City is required");
-//            return;
-//        }
-//
-//        if (inPath.isEmpty()) {
-//            System.out.println("Input path is required");
-//            return;
-//        }
-//
-//        if (outPath.isEmpty()) {
-//            System.out.println("Output path is required");
-//            return;
-//        }
-
         try {
-            // Group Config
-            GroupConfig groupConfig = new GroupConfig().setName("l12345").setPassword("l12345-pass");
-
-            // Client Network Config
-            ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
-            clientNetworkConfig.addAddress("127.0.0.1");
-
-            // Client Config
-            ClientConfig clientConfig = new ClientConfig().setGroupConfig(groupConfig).setNetworkConfig(clientNetworkConfig);
+            // Parse all properties
+            processProperties();
 
             // Node Client
-            HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
+            HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
             MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
-            KeyValueSource<String, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+
+            IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
+            IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("agencies");
 
             // Job Tracker
             JobTracker jobTracker = hazelcastInstance.getJobTracker("ticket-count");
 
+            logger.info("Inicio de la lectura del archivo");
+
             // Text File Reading and Key Value Source Loading
-            try (Stream<String> lines = Files.lines(Paths.get(args[0]), StandardCharsets.UTF_8)) {
+            try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 lines.skip(1)
                         .map(line -> line.split(";"))
-                        .map(line -> new TicketRow(
-                                line[0],
-                                line[1],
-                                line[3],
-                                line[5],
+                        .map(line -> new TicketRow(line[0], line[1], line[3], line[5],
                                 (int) Double.parseDouble(line[2]),
-                                LocalDate.parse(line[4]))
-                        ).forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+                                LocalDate.parse(line[4])))
+                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
             }
 
+            try (Stream<String> lines = Files.lines(Paths.get(inPath, "infractions" + city + ".csv"), StandardCharsets.UTF_8)) {
+                lines.skip(1)
+                        .map(line -> line.split(";"))
+                        .forEach(line -> infractionsMap.put(line[0], line[1]));
+            }
+
+            try (Stream<String> lines = Files.lines(Paths.get(inPath, "agencies" + city + ".csv"), StandardCharsets.UTF_8)) {
+                AtomicInteger id = new AtomicInteger();
+                lines.skip(1)
+                        .map(line -> line.split(";"))
+                        .forEach(line -> agenciesMap.put(line[0], id.getAndIncrement()));
+            }
+
+            logger.info("Fin de lectura del archivo");
+            logger.info("Inicio del trabajo map/reduce");
+
             // MapReduce Job
-            Job<String, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
+            Job<String, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<TotalTicketsResult>> future = job
                     .mapper(new TotalTicketsMapper())
                     .reducer(new TotalTicketsReducerFactory())
-                    .submit(new TotalTicketsCollator());
+                    .submit(new TotalTicketsCollator(hazelcastInstance));
 
             // Wait and retrieve the result
             SortedSet<TotalTicketsResult> result = future.get();
+
+            logger.info("Fin del trabajo map/reduce");
 
             // Sort entries ascending by count and print
             String header = "Infraction;Agency;Ticket";
@@ -113,20 +97,11 @@ public class TotalTicketsClient {
             Function<TotalTicketsResult, String> csvLineMapper = TotalTicketsResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }
-    }
-
-    private static <T> void writeToCSV(String fileName, String header, Iterator<T> dataList, Function<T, String> csvLineMapper) throws IOException {
-        List<String> lines = new ArrayList<>();
-        lines.add(header);
-
-        while (dataList.hasNext()) {
-            lines.add(csvLineMapper.apply(dataList.next()));
-        }
-
-        Files.write(Paths.get(fileName), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
 }

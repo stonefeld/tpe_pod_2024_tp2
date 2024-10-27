@@ -5,7 +5,7 @@ import com.hazelcast.core.Hazelcast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.util.List;
 
 public class Server {
 
@@ -14,11 +14,15 @@ public class Server {
     public static void main(String[] args) {
         logger.info(" Server Starting ...");
 
+        String[] interfaces = System.getProperty("interfaces", "127.0.0.*").split(";");
+        String clusterName = System.getProperty("clusterName", "g7-tpe2");
+        String clusterPassword = System.getProperty("clusterPassword", "g7-tpe2-pass");
+
         // Config
         Config config = new Config();
 
         // Group Config
-        GroupConfig groupConfig = new GroupConfig().setName("l12345").setPassword("l12345-pass");
+        GroupConfig groupConfig = new GroupConfig().setName(clusterName).setPassword(clusterPassword);
         config.setGroupConfig(groupConfig);
 
         // Network Config
@@ -27,11 +31,13 @@ public class Server {
         JoinConfig joinConfig = new JoinConfig().setMulticastConfig(multicastConfig);
 
         InterfacesConfig interfacesConfig = new InterfacesConfig()
-                .setInterfaces(Collections.singletonList("127.0.0.*")).setEnabled(true);
+                .setInterfaces(List.of(interfaces))
+                .setEnabled(true);
 
         NetworkConfig networkConfig = new NetworkConfig().setInterfaces(interfacesConfig).setJoin(joinConfig);
 
         config.setNetworkConfig(networkConfig);
+        config.setInstanceName(clusterName);
 
         // Opcional: Logger detallado
 //        java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");

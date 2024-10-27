@@ -6,4 +6,5 @@ public record TotalTicketsResult(String agency, String infraction, long totalTic
     public String toString() {
         return infraction + ";" + agency + ";" + totalTickets;
     }
+
 }

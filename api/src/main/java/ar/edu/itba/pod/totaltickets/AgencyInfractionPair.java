@@ -4,22 +4,24 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
+import java.io.IOException;
 import java.util.Objects;
 
 public class AgencyInfractionPair implements DataSerializable {
-    private String agency;
+
+    private Integer agencyId;
     private String infractionId;
 
     public AgencyInfractionPair() {
     }
 
-    public AgencyInfractionPair(String agency, String infraction) {
-        this.agency = agency;
+    public AgencyInfractionPair(Integer agencyId, String infraction) {
+        this.agencyId = agencyId;
         this.infractionId = infraction;
     }
 
-    public String getAgency() {
-        return agency;
+    public Integer getAgencyId() {
+        return agencyId;
     }
 
     public String getInfractionId() {
@@ -27,24 +29,25 @@ public class AgencyInfractionPair implements DataSerializable {
     }
 
     @Override
-    public void writeData(ObjectDataOutput out) throws java.io.IOException {
-        out.writeUTF(agency);
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeInt(agencyId);
         out.writeUTF(infractionId);
     }
 
     @Override
-    public void readData(ObjectDataInput in) throws java.io.IOException {
-        agency = in.readUTF();
+    public void readData(ObjectDataInput in) throws IOException {
+        agencyId = in.readInt();
         infractionId = in.readUTF();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof AgencyInfractionPair agencyInfractionPair && infractionId.equals(agencyInfractionPair.infractionId) && agency.equals(agencyInfractionPair.agency);
+        return obj instanceof AgencyInfractionPair agencyInfractionPair && infractionId.equals(agencyInfractionPair.infractionId) && agencyId.equals(agencyInfractionPair.agencyId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(agency, infractionId);
+        return Objects.hash(agencyId, infractionId);
     }
+
 }
