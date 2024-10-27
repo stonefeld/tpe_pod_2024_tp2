@@ -19,8 +19,6 @@ import java.util.function.Function;
 
 public abstract class Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
-
     // Required by all queries
     protected static String[] addresses;
     protected static String city, inPath, outPath;

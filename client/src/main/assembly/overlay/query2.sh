@@ -21,7 +21,7 @@ for i in "$@"; do
   esac
 done
 
-MAIN_CLASS="ar.edu.itba.pod.hazelcast.client.TotalTicketsClient"
+MAIN_CLASS="ar.edu.itba.pod.hazelcast.client.YTDCollectionClient"
 
 java $JAVA_OPTS -cp 'lib/jars/*' $MAIN_CLASS $*
 
