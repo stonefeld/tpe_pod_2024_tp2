@@ -5,17 +5,19 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
+import java.util.Objects;
 
-public class PlateNumberPair implements DataSerializable {
-    private String plate;
+public class PlateNumberInfractionTriplet implements DataSerializable {
+    private String plate, infractionId;
     private long count;
 
-    public PlateNumberPair() {
+    public PlateNumberInfractionTriplet() {
     }
 
-    public PlateNumberPair(String plate, long count) {
+    public PlateNumberInfractionTriplet(String plate, long count, String infractionId) {
         this.plate = plate;
         this.count = count;
+        this.infractionId = infractionId;
     }
 
     public String getPlate() {
@@ -26,25 +28,34 @@ public class PlateNumberPair implements DataSerializable {
         return count;
     }
 
+    public String getInfractionId() {
+        return infractionId;
+    }
+
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(plate);
         out.writeLong(count);
+        out.writeUTF(infractionId);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
         plate = in.readUTF();
         count = in.readLong();
+        infractionId = in.readUTF();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof PlateNumberPair plateNumberPair && plate.equals(plateNumberPair.plate);
+        return obj instanceof PlateNumberInfractionTriplet plateNumberPair &&
+                plate.equals(plateNumberPair.plate) && count == plateNumberPair.count &&
+                infractionId.equals(plateNumberPair.infractionId
+                );
     }
 
     @Override
     public int hashCode() {
-        return plate.hashCode();
+        return Objects.hash(plate, count, infractionId);
     }
 }

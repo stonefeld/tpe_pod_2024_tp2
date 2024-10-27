@@ -103,13 +103,14 @@ public class RepeatedPlatesClient {
 
             LocalDate from = LocalDate.of(2010, 1, 1);
             LocalDate to = LocalDate.of(2023, 12, 31);
+            int n = 2;
 
             // MapReduce Job
             Job<LocalDate, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
             JobCompletableFuture<SortedSet<RepeatedPlatesResult>> future = job
                     .keyPredicate(new RepeatedPlatesKeyPredicate(from, to))
                     .mapper(new RepeatedPlatesMapper())
-                    .reducer(new RepeatedPlatesReducerFactory())
+                    .reducer(new RepeatedPlatesReducerFactory(n))
                     .submit(new RepeatedPlatesCollator());
 
             // Wait and retrieve the result
