@@ -8,16 +8,17 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class PlateNumberInfractionTriplet implements DataSerializable {
+
     private String plate, infractionId;
     private long count;
 
     public PlateNumberInfractionTriplet() {
     }
 
-    public PlateNumberInfractionTriplet(String plate, long count, String infractionId) {
+    public PlateNumberInfractionTriplet(String plate, String infractionId, long count) {
         this.plate = plate;
-        this.count = count;
         this.infractionId = infractionId;
+        this.count = count;
     }
 
     public String getPlate() {
@@ -58,4 +59,5 @@ public class PlateNumberInfractionTriplet implements DataSerializable {
     public int hashCode() {
         return Objects.hash(plate, count, infractionId);
     }
+
 }

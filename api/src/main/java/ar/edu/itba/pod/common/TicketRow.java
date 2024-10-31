@@ -5,7 +5,10 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class TicketRow implements DataSerializable {
 
@@ -16,13 +19,19 @@ public class TicketRow implements DataSerializable {
     public TicketRow() {
     }
 
-    public TicketRow(String plateId, String infractionId, String agency, String county, int amount, LocalDate issueDate) {
+    public TicketRow(String plateId, String infractionId, String agency, String county, int amount, String issueDate) {
         this.plateId = plateId;
         this.infractionId = infractionId;
         this.agency = agency;
         this.county = county;
         this.amount = amount;
-        this.issueDate = issueDate;
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(issueDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            this.issueDate = dateTime.toLocalDate();
+        } catch (DateTimeException e) {
+            this.issueDate = LocalDate.parse(issueDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        }
     }
 
     public String getPlateId() {

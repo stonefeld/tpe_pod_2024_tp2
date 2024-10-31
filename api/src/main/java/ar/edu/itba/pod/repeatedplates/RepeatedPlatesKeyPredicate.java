@@ -5,6 +5,7 @@ import com.hazelcast.mapreduce.KeyPredicate;
 import java.time.LocalDate;
 
 public class RepeatedPlatesKeyPredicate implements KeyPredicate<LocalDate> {
+
     private final LocalDate from, to;
 
     public RepeatedPlatesKeyPredicate(LocalDate from, LocalDate to) {
@@ -14,7 +15,9 @@ public class RepeatedPlatesKeyPredicate implements KeyPredicate<LocalDate> {
 
     @Override
     public boolean evaluate(LocalDate key) {
-        return key != null && key.isAfter(from) && key.isBefore(to);
+        return key != null
+                && (key.isAfter(from) || key.isEqual(from))
+                && (key.isBefore(to) || key.isEqual(to));
     }
 
 }

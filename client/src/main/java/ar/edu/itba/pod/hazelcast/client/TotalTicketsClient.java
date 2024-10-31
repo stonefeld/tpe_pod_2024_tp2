@@ -58,8 +58,7 @@ public class TotalTicketsClient extends Client {
                 lines.skip(1)
                         .map(line -> line.split(";"))
                         .map(line -> new TicketRow(line[0], line[1], line[3], line[5],
-                                (int) Double.parseDouble(line[2]),
-                                LocalDate.parse(line[4])))
+                                (int) Double.parseDouble(line[2]), line[4]))
                         .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
             }
 

@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class RepeatedPlatesCollator implements Collator<Map.Entry<String, Double>, SortedSet<RepeatedPlatesResult>> {
+
     @Override
     public SortedSet<RepeatedPlatesResult> collate(Iterable<Map.Entry<String, Double>> values) {
         SortedSet<RepeatedPlatesResult> result = new TreeSet<>(

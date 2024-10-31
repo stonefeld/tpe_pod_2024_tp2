@@ -5,13 +5,14 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,13 +26,14 @@ public abstract class Client {
 
     // Required by queries 3 and 4
     protected static Integer n;
-    protected static String from, to, agency;
+    protected static String agency;
+    protected static LocalDate from, to;
 
     // Optional arguments
     protected static String clusterName, clusterPassword;
 
     public static void processProperties() {
-        addresses = System.getProperty("addresses", "").split(":");
+        addresses = System.getProperty("addresses", "").split(";");
         city = System.getProperty("city", "");
         inPath = System.getProperty("inPath", "");
         outPath = System.getProperty("outPath", "");
@@ -53,8 +55,8 @@ public abstract class Client {
         }
 
         String nStr = System.getProperty("n", "");
-        from = System.getProperty("from", "");
-        to = System.getProperty("to", "");
+        String fromStr = System.getProperty("from", "");
+        String toStr = System.getProperty("to", "");
         agency = System.getProperty("agency", "").replaceAll("_", " ");
 
         if (!nStr.isEmpty()) {
@@ -62,6 +64,22 @@ public abstract class Client {
                 n = Integer.parseInt(nStr);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid value for n");
+            }
+        }
+
+        if (!fromStr.isEmpty()) {
+            try {
+                from = LocalDate.parse(fromStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (DateTimeException e) {
+                throw new IllegalArgumentException("Invalid value for from");
+            }
+        }
+
+        if (!toStr.isEmpty()) {
+            try {
+                to = LocalDate.parse(toStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (DateTimeException e) {
+                throw new IllegalArgumentException("Invalid value for to");
             }
         }
 
@@ -76,6 +94,7 @@ public abstract class Client {
         // Client Network Config
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
         for (String address : addresses) {
+            System.out.println(address);
             clientNetworkConfig.addAddress(address);
         }
 

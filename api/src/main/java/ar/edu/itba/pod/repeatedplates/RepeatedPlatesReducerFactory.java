@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RepeatedPlatesReducerFactory implements ReducerFactory<String, PlateNumberInfractionTriplet, Double> {
+
     private final int n;
 
     public RepeatedPlatesReducerFactory(int n) {
@@ -19,7 +20,8 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
     }
 
     private static class RepeatedPlatesReducer extends Reducer<PlateNumberInfractionTriplet, Double> {
-        private final Map<String, Map<String, Long>> map = new HashMap<>();
+
+        private final Map<String, Map<String, Long>> repeatedInfractionsByPlate = new HashMap<>();
         private final int n;
 
         public RepeatedPlatesReducer(int n) {
@@ -29,31 +31,36 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
         @Override
         public void reduce(PlateNumberInfractionTriplet value) {
             String plate = value.getPlate();
-            long count = value.getCount();
             String infractionId = value.getInfractionId();
+            long count = value.getCount();
 
-            map.putIfAbsent(plate, new HashMap<>());
-            if (map.get(plate).containsKey(infractionId)) {
-                map.get(plate).put(infractionId, map.get(plate).get(infractionId) + count);
-            } else {
-                map.get(plate).put(infractionId, count);
-            }
+//            repeatedInfractionsByPlate.putIfAbsent(plate, new HashMap<>());
+//            if (repeatedInfractionsByPlate.get(plate).containsKey(infractionId)) {
+//                repeatedInfractionsByPlate.get(plate).put(infractionId, repeatedInfractionsByPlate.get(plate).get(infractionId) + count);
+//            } else {
+//                repeatedInfractionsByPlate.get(plate).put(infractionId, count);
+//            }
+
+            repeatedInfractionsByPlate.computeIfAbsent(plate, k -> new HashMap<>());
+            repeatedInfractionsByPlate.get(plate).merge(infractionId, count, Long::sum);
         }
 
         @Override
         public Double finalizeReduce() {
             double repeatedPlates = 0;
-            for (Map.Entry<String, Map<String, Long>> entry : map.entrySet()) {
-                for (Map.Entry<String, Long> innerEntry : entry.getValue().entrySet()) {
-                    if (innerEntry.getValue() >= n) {
+            for (Map.Entry<String, Map<String, Long>> plateEntry : repeatedInfractionsByPlate.entrySet()) {
+                for (Map.Entry<String, Long> infractionEntry : plateEntry.getValue().entrySet()) {
+                    if (infractionEntry.getValue() >= n) {
                         repeatedPlates++;
                         break;
                     }
                 }
             }
 
-            double toTruncate = (repeatedPlates / (double) map.size()) * 100;
+            double toTruncate = (repeatedPlates / (double) repeatedInfractionsByPlate.size()) * 100;
             return Math.floor(toTruncate * 100) / 100;
         }
+
     }
+
 }
