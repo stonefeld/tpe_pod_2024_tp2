@@ -2,14 +2,7 @@ package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.common.TicketRow;
 import ar.edu.itba.pod.repeatedplates.*;
-import ar.edu.itba.pod.totaltickets.TotalTicketsCollator;
-import ar.edu.itba.pod.totaltickets.TotalTicketsMapper;
-import ar.edu.itba.pod.totaltickets.TotalTicketsReducerFactory;
-import ar.edu.itba.pod.totaltickets.TotalTicketsResult;
 import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.client.config.ClientNetworkConfig;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
@@ -23,13 +16,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -57,6 +44,8 @@ public class RepeatedPlatesClient extends Client {
             // Job Tracker
             JobTracker jobTracker = hazelcastInstance.getJobTracker("repeated-plates");
 
+            logger.info("Inicio de la lectura del archivo");
+
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 lines.skip(1)
@@ -65,6 +54,9 @@ public class RepeatedPlatesClient extends Client {
                                 (int) Double.parseDouble(line[2]), line[4])
                         ).forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getIssueDate(), ticketRow));
             }
+
+            logger.info("Fin de lectura del archivo");
+            logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
             Job<LocalDate, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
@@ -77,12 +69,16 @@ public class RepeatedPlatesClient extends Client {
             // Wait and retrieve the result
             SortedSet<RepeatedPlatesResult> result = future.get();
 
+            logger.info("Fin del trabajo map/reduce");
+
             // Sort entries ascending by count and print
             String header = "County;Percentage";
             String fileName = "output.csv";
             Function<RepeatedPlatesResult, String> csvLineMapper = RepeatedPlatesResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }

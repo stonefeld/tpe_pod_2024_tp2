@@ -89,6 +89,8 @@ public class YTDCollectionClient extends Client {
             Function<YTDCollectionResult, String> csvLineMapper = YTDCollectionResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }

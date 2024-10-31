@@ -7,8 +7,8 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 
 public class IntegerPair implements DataSerializable {
-    private Integer max;
-    private Integer min;
+
+    private Integer min, max;
 
     public IntegerPair() {
     }
