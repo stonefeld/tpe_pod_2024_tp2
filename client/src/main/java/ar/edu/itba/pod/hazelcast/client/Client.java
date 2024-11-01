@@ -97,10 +97,8 @@ public abstract class Client {
 
         // Client Network Config
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
-        for (String address : addresses) {
-            System.out.println(address);
+        for (String address : addresses)
             clientNetworkConfig.addAddress(address);
-        }
 
         // Client Config
         ClientConfig clientConfig = new ClientConfig().setGroupConfig(groupConfig).setNetworkConfig(clientNetworkConfig);

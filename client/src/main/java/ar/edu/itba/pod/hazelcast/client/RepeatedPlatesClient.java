@@ -27,12 +27,16 @@ public class RepeatedPlatesClient extends Client {
     private static final Logger logger = LoggerFactory.getLogger(RepeatedPlatesClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        logger.info("Repeated Plates Client Starting ...");
-
         try {
             // Parse all properties
-            // TODO: lanzar exception si n, from y/o to no estan seteados
             processProperties();
+
+            if (n == null)
+                throw new IllegalArgumentException("N is required");
+            if (from == null)
+                throw new IllegalArgumentException("From is required");
+            if (to == null)
+                throw new IllegalArgumentException("To is required");
 
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();

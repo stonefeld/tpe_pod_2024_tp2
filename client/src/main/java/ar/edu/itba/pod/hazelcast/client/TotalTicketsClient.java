@@ -32,8 +32,6 @@ public class TotalTicketsClient extends Client {
     private static final Logger logger = LoggerFactory.getLogger(TotalTicketsClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        logger.info("Total Tickets Client Starting ...");
-
         try {
             // Parse all properties
             processProperties();

@@ -27,12 +27,14 @@ public class MaxTicketDifferenceClient extends Client {
     private static final Logger logger = LoggerFactory.getLogger(MaxTicketDifferenceClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        logger.info("Total Tickets Client Starting ...");
-
         try {
             // Parse all properties
-            // TODO: lanzar exception si n y/o agency no estan seteados
             processProperties();
+
+            if (n == null)
+                throw new IllegalArgumentException("N is required");
+            if (agency == null)
+                throw new IllegalArgumentException("Agency is required");
 
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
@@ -44,7 +46,7 @@ public class MaxTicketDifferenceClient extends Client {
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("ticket-count");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("max-difference");
 
             logger.info("Inicio de la lectura del archivo");
 

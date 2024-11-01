@@ -32,8 +32,6 @@ public class YTDCollectionClient extends Client {
     private static final Logger logger = LoggerFactory.getLogger(YTDCollectionClient.class);
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        logger.info("YTD Collection Client Starting ...");
-
         try {
             // Parse all properties
             processProperties();
