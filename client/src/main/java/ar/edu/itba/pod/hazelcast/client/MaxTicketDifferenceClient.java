@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import ar.edu.itba.pod.common.TicketRow;
-import ar.edu.itba.pod.maxticketdifference.*;
+import ar.edu.itba.pod.hazelcast.common.TicketRow;
+import ar.edu.itba.pod.hazelcast.maxticketdifference.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -50,11 +50,9 @@ public class MaxTicketDifferenceClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
-                lines.skip(1)
-                        .map(line -> line.split(";"))
-                        .map(line -> new TicketRow(line[0], line[1], line[3], line[5],
-                                (int) Double.parseDouble(line[2]), line[4])
-                        ).forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+                Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
+                lines.skip(1).map(line -> line.split(";")).map(mapper)
+                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "infractions" + city + ".csv"), StandardCharsets.UTF_8)) {
@@ -76,6 +74,10 @@ public class MaxTicketDifferenceClient extends Client {
 
             // Wait and retrieve the result
             SortedSet<MaxTicketDifferenceResult> result = future.get();
+
+            // Destroy the data
+            ticketsMultiMap.destroy();
+            infractionsMap.destroy();
 
             logger.info("Fin del trabajo map/reduce");
 

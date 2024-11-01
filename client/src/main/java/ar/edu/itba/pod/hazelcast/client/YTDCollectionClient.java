@@ -1,10 +1,11 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import ar.edu.itba.pod.common.TicketRow;
-import ar.edu.itba.pod.ytdcollection.YTDCollectionCollator;
-import ar.edu.itba.pod.ytdcollection.YTDCollectionMapper;
-import ar.edu.itba.pod.ytdcollection.YTDCollectionReducerFactory;
-import ar.edu.itba.pod.ytdcollection.YTDCollectionResult;
+import ar.edu.itba.pod.hazelcast.common.ExcludeNonExistingAgenciesKeyPredicate;
+import ar.edu.itba.pod.hazelcast.common.TicketRow;
+import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionCollator;
+import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionMapper;
+import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionReducerFactory;
+import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionResult;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -20,7 +21,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,11 +54,9 @@ public class YTDCollectionClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
-                lines.skip(1)
-                        .map(line -> line.split(";"))
-                        .map(line -> new TicketRow(line[0], line[1], line[3], line[5],
-                                (int) Double.parseDouble(line[2]), line[4])
-                        ).forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+                Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
+                lines.skip(1).map(line -> line.split(";")).map(mapper)
+                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "agencies" + city + ".csv"), StandardCharsets.UTF_8)) {
@@ -74,12 +72,17 @@ public class YTDCollectionClient extends Client {
             // MapReduce Job
             Job<String, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> future = job
+                    .keyPredicate(new ExcludeNonExistingAgenciesKeyPredicate())
                     .mapper(new YTDCollectionMapper())
                     .reducer(new YTDCollectionReducerFactory())
                     .submit(new YTDCollectionCollator(hazelcastInstance));
 
             // Wait and retrieve the result
             SortedSet<YTDCollectionResult> result = future.get();
+
+            // Destroy the data
+            ticketsMultiMap.destroy();
+            agenciesMap.destroy();
 
             logger.info("Fin del trabajo map/reduce");
 

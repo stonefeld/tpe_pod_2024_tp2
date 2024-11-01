@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -31,6 +32,9 @@ public abstract class Client {
 
     // Optional arguments
     protected static String clusterName, clusterPassword;
+
+    protected static Function<String[], TicketRow> mapperNYC = line -> new TicketRow(line[0], line[1], line[3], line[5], (int) Double.parseDouble(line[2]), line[4]);
+    protected static Function<String[], TicketRow> mapperCHI = line -> new TicketRow(line[3], line[4], line[2], line[1], (int) Double.parseDouble(line[5]), line[0]);
 
     public static void processProperties() {
         addresses = System.getProperty("addresses", "").split(";");
