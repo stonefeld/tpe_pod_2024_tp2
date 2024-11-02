@@ -40,14 +40,14 @@ public class TotalTicketsClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
-            IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
-            IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("agencies");
+            IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
+            IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("ticket-count");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-ticket-count");
 
             logger.info("Inicio de la lectura del archivo");
 
@@ -90,14 +90,14 @@ public class TotalTicketsClient extends Client {
             infractionsMap.destroy();
             agenciesMap.destroy();
 
-            logger.info("Fin del trabajo map/reduce");
-
             // Sort entries ascending by count and print
             String header = "Infraction;Agency;Ticket";
-            String fileName = "output.csv";
+            String fileName = "query1.csv";
             Function<TotalTicketsResult, String> csvLineMapper = TotalTicketsResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
         } finally {

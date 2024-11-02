@@ -40,13 +40,13 @@ public class MaxTicketDifferenceClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<String, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
-            IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
+            IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("max-difference");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-max-difference");
 
             logger.info("Inicio de la lectura del archivo");
 
@@ -81,14 +81,14 @@ public class MaxTicketDifferenceClient extends Client {
             ticketsMultiMap.destroy();
             infractionsMap.destroy();
 
-            logger.info("Fin del trabajo map/reduce");
-
             // Sort entries ascending by count and print
             String header = "Infraction;Min;Max;Diff";
-            String fileName = "output.csv";
+            String fileName = "query4.csv";
             Function<MaxTicketDifferenceResult, String> csvLineMapper = MaxTicketDifferenceResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
         } finally {

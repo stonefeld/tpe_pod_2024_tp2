@@ -8,8 +8,11 @@ print_error() {
 }
 
 print_help() {
-  # TODO: usage
-  printf "Usage"
+  printf "Usage: ./$(basename $0) -Daddresses='xx.xx.xx.xx:XXXX;yy.yy.yy.yy:YYYY' -Dcity=XXX -DinPath=XXX -DoutPath=XXX
+\t-Daddresses: Hazelcast cluster addresses
+\t-Dcity: City to query
+\t-DinPath: Location of the input csv files
+\t-DoutPath: Location of the output csv file\n"
   exit 0
 }
 

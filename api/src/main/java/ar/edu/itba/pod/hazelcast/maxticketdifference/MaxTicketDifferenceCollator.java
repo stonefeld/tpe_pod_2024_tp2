@@ -21,7 +21,7 @@ public class MaxTicketDifferenceCollator implements Collator<Map.Entry<String, I
 
     @Override
     public SortedSet<MaxTicketDifferenceResult> collate(Iterable<Map.Entry<String, IntegerPair>> values) {
-        IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
+        IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
         Comparator<MaxTicketDifferenceResult> cmp = Comparator.comparing(MaxTicketDifferenceResult::difference).reversed()
                 .thenComparing(MaxTicketDifferenceResult::infraction);
 

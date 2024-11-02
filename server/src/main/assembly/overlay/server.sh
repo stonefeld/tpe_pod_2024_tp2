@@ -8,8 +8,12 @@ print_error() {
 }
 
 print_help() {
-  # TODO: usage
-  printf "Usage"
+  printf "Usage: ./$(basename $0) [-Dinterfaces='xx.xx.xx.xx:XXXX;yy.yy.yy.yy:YYYY' | -DclusterName=XXX | -DclusterPassword=XXX]
+\t-Dinterfaces: Hazelcast cluster addresses
+\t-DclusterName: Hazelcast cluster name
+\t-DclusterPassword: Hazelcast cluster password
+
+This parameters are optional, if not provided the default values will be used.\n"
   exit 0
 }
 

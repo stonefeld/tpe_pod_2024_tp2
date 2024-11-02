@@ -15,8 +15,8 @@ public class Server {
         logger.info(" Server Starting ...");
 
         String[] interfaces = System.getProperty("interfaces", "127.0.0.*").split(";");
-        String clusterName = System.getProperty("clusterName", "g7-tpe2");
-        String clusterPassword = System.getProperty("clusterPassword", "g7-tpe2-pass");
+        String clusterName = System.getProperty("clusterName", "g2-tpe2");
+        String clusterPassword = System.getProperty("clusterPassword", "g2-tpe2-pass");
 
         // Config
         Config config = new Config();

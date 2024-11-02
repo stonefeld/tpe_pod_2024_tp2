@@ -12,7 +12,7 @@ public class TotalTicketsMapper implements Mapper<String, TicketRow, AgencyInfra
 
     @Override
     public void map(String key, TicketRow value, Context<AgencyInfractionPair, Long> context) {
-        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g7-tpe2").getMap("agencies");
+        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g2-tpe2").getMap("g2-agencies");
         context.emit(new AgencyInfractionPair(agenciesMap.get(value.getAgency()), value.getInfractionId()), ONE);
     }
 

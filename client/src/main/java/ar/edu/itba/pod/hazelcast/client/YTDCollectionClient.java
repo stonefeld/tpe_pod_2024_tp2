@@ -40,13 +40,13 @@ public class YTDCollectionClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<String, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
-            IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("agencies");
+            IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("ytd-collection");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-ytd-collection");
 
             logger.info("Inicio de la lectura del archivo");
 
@@ -82,14 +82,14 @@ public class YTDCollectionClient extends Client {
             ticketsMultiMap.destroy();
             agenciesMap.destroy();
 
-            logger.info("Fin del trabajo map/reduce");
-
             // Sort entries ascending by count and print
             String header = "Agency;Year;Month;YTD";
-            String fileName = "output.csv";
+            String fileName = "query2.csv";
             Function<YTDCollectionResult, String> csvLineMapper = YTDCollectionResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
         } finally {

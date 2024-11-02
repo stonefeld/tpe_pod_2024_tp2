@@ -20,8 +20,8 @@ public class TotalTicketsCollator implements Collator<Map.Entry<AgencyInfraction
 
     @Override
     public SortedSet<TotalTicketsResult> collate(Iterable<Map.Entry<AgencyInfractionPair, Long>> values) {
-        IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("agencies");
-        IMap<String, String> infractionsMap = hazelcastInstance.getMap("infractions");
+        IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
+        IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
 
         SortedSet<TotalTicketsResult> result = new TreeSet<>(
                 Comparator.comparing(TotalTicketsResult::totalTickets).reversed()

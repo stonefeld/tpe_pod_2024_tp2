@@ -8,7 +8,7 @@ public class ExcludeNonExistingAgenciesKeyPredicate implements KeyPredicate<Stri
 
     @Override
     public boolean evaluate(String s) {
-        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g7-tpe2").getMap("agencies");
+        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g2-tpe2").getMap("g2-agencies");
         return agenciesMap.containsKey(s);
     }
 

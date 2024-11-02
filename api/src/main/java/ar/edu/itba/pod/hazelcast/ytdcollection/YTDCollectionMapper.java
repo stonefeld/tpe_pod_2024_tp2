@@ -10,7 +10,7 @@ public class YTDCollectionMapper implements Mapper<String, TicketRow, AgencyMont
 
     @Override
     public void map(String key, TicketRow value, Context<AgencyMonthYearTriplet, Integer> context) {
-        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g7-tpe2").getMap("agencies");
+        IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g2-tpe2").getMap("g2-agencies");
         for (int i = value.getIssueDate().getMonthValue(); i <= 12; i++) {
             context.emit(new AgencyMonthYearTriplet(agenciesMap.get(value.getAgency()), i, value.getIssueDate().getYear()), value.getAmount());
         }

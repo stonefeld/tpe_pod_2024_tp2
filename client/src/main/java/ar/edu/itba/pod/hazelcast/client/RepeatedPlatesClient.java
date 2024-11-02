@@ -42,11 +42,11 @@ public class RepeatedPlatesClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("tickets");
+            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<LocalDate, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("repeated-plates");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-repeated-plates");
 
             logger.info("Inicio de la lectura del archivo");
 
@@ -74,14 +74,14 @@ public class RepeatedPlatesClient extends Client {
             // Destroy the data
             ticketsMultiMap.destroy();
 
-            logger.info("Fin del trabajo map/reduce");
-
             // Sort entries ascending by count and print
             String header = "County;Percentage";
-            String fileName = "output.csv";
+            String fileName = "query3.csv";
             Function<RepeatedPlatesResult, String> csvLineMapper = RepeatedPlatesResult::toString;
 
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
         } finally {

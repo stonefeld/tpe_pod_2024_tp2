@@ -20,7 +20,7 @@ public class YTDCollectionCollator implements Collator<Map.Entry<AgencyMonthYear
 
     @Override
     public SortedSet<YTDCollectionResult> collate(Iterable<Map.Entry<AgencyMonthYearTriplet, Integer>> values) {
-        IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("agencies");
+        IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
         SortedSet<YTDCollectionResult> result = new TreeSet<>(
                 Comparator.comparing(YTDCollectionResult::agency)

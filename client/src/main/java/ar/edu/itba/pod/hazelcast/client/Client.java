@@ -87,8 +87,8 @@ public abstract class Client {
             }
         }
 
-        clusterName = System.getProperty("clusterName", "g7-tpe2");
-        clusterPassword = System.getProperty("clusterPassword", "g7-tpe2-pass");
+        clusterName = System.getProperty("clusterName", "g2-tpe2");
+        clusterPassword = System.getProperty("clusterPassword", "g2-tpe2-pass");
     }
 
     public static HazelcastInstance getHazelcastInstance() {
