@@ -1,9 +1,6 @@
 package ar.edu.itba.pod.hazelcast.maxticketdifference;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -22,11 +19,13 @@ public class MaxTicketDifferenceCollator implements Collator<Map.Entry<String, I
     @Override
     public SortedSet<MaxTicketDifferenceResult> collate(Iterable<Map.Entry<String, IntegerPair>> values) {
         IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
-        Comparator<MaxTicketDifferenceResult> cmp = Comparator.comparing(MaxTicketDifferenceResult::difference).reversed()
+        Comparator<MaxTicketDifferenceResult> cmp = Comparator
+                .comparing(MaxTicketDifferenceResult::difference).reversed()
                 .thenComparing(MaxTicketDifferenceResult::infraction);
 
         SortedSet<MaxTicketDifferenceResult> result = new TreeSet<>(cmp);
         SortedSet<MaxTicketDifferenceResult> top = new TreeSet<>(cmp);
+        System.out.println(Arrays.toString(result.toArray()));
 
         for (Map.Entry<String, IntegerPair> entry : values) {
             result.add(new MaxTicketDifferenceResult(
@@ -37,7 +36,7 @@ public class MaxTicketDifferenceCollator implements Collator<Map.Entry<String, I
             ));
         }
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < Math.min(n, result.size()); i++) {
             top.add(result.removeFirst());
         }
 

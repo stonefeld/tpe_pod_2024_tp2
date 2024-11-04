@@ -11,7 +11,6 @@ import com.hazelcast.mapreduce.JobCompletableFuture;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +36,7 @@ public class YTDCollectionClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query2-" + city);
             KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
@@ -74,10 +73,6 @@ public class YTDCollectionClient extends Client {
 
             // Wait and retrieve the result
             SortedSet<YTDCollectionResult> result = future.get();
-
-            // Destroy the data
-            ticketsMultiMap.destroy();
-            agenciesMap.destroy();
 
             // Sort entries ascending by count and print
             String header = "Agency;Year;Month;YTD";

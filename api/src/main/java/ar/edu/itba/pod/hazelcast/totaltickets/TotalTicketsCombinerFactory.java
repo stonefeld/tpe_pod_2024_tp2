@@ -11,6 +11,7 @@ public class TotalTicketsCombinerFactory implements CombinerFactory<AgencyInfrac
     }
 
     private static class TotalTicketsCombiner extends Combiner<Long, Long> {
+
         private Long sum = 0L;
 
         @Override
@@ -27,5 +28,7 @@ public class TotalTicketsCombinerFactory implements CombinerFactory<AgencyInfrac
         public Long finalizeChunk() {
             return sum;
         }
+
     }
+
 }

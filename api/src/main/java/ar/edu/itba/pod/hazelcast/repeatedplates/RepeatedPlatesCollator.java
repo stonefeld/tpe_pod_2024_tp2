@@ -11,10 +11,9 @@ public class RepeatedPlatesCollator implements Collator<Map.Entry<String, Double
 
     @Override
     public SortedSet<RepeatedPlatesResult> collate(Iterable<Map.Entry<String, Double>> values) {
-        SortedSet<RepeatedPlatesResult> result = new TreeSet<>(
-                Comparator.comparing(RepeatedPlatesResult::percentage).reversed()
-                        .thenComparing(RepeatedPlatesResult::county)
-        );
+        SortedSet<RepeatedPlatesResult> result = new TreeSet<>(Comparator
+                .comparing(RepeatedPlatesResult::percentage).reversed()
+                .thenComparing(RepeatedPlatesResult::county));
 
         for (Map.Entry<String, Double> entry : values) {
             if (entry.getValue() != 0) {

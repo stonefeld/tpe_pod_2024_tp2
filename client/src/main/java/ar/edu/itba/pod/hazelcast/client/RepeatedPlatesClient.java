@@ -2,7 +2,6 @@ package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.repeatedplates.*;
-import ar.edu.itba.pod.hazelcast.ytdcollection.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
@@ -11,7 +10,6 @@ import com.hazelcast.mapreduce.JobCompletableFuture;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +42,7 @@ public class RepeatedPlatesClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query3-" + city);
             KeyValueSource<LocalDate, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker
@@ -72,9 +70,6 @@ public class RepeatedPlatesClient extends Client {
 
             // Wait and retrieve the result
             SortedSet<RepeatedPlatesResult> result = future.get();
-
-            // Destroy the data
-            ticketsMultiMap.destroy();
 
             // Sort entries ascending by count and print
             String header = "County;Percentage";
