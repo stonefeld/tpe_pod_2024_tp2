@@ -1,11 +1,7 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import ar.edu.itba.pod.hazelcast.common.ExcludeNonExistingAgenciesKeyPredicate;
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
-import ar.edu.itba.pod.hazelcast.totaltickets.TotalTicketsCollator;
-import ar.edu.itba.pod.hazelcast.totaltickets.TotalTicketsMapper;
-import ar.edu.itba.pod.hazelcast.totaltickets.TotalTicketsReducerFactory;
-import ar.edu.itba.pod.hazelcast.totaltickets.TotalTicketsResult;
+import ar.edu.itba.pod.hazelcast.totaltickets.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -40,8 +36,8 @@ public class TotalTicketsClient extends Client {
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<AgencyInfractionNamesPair, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query1");
+            KeyValueSource<AgencyInfractionNamesPair, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
@@ -54,41 +50,49 @@ public class TotalTicketsClient extends Client {
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
-                lines.skip(1).map(line -> line.split(";")).map(mapper)
-                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+//                lines.skip(1).map(line -> line.split(";")).map(mapper)
+//                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+                lines.skip(1).forEach(line -> {
+                    String[] split = line.split(";");
+                    TicketRow ticketRow = mapper.apply(split);
+                    ticketsMultiMap.put(new AgencyInfractionNamesPair(ticketRow.getAgency(), ticketRow.getInfractionId()), ticketRow);
+                });
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "infractions" + city + ".csv"), StandardCharsets.UTF_8)) {
-                lines.skip(1)
-                        .map(line -> line.split(";"))
-                        .forEach(line -> infractionsMap.put(line[0], line[1]));
+//                lines.skip(1)
+//                        .map(line -> line.split(";"))
+//                        .forEach(line -> infractionsMap.put(line[0], line[1]));
+                lines.skip(1).forEach(line -> {
+                    String[] split = line.split(";");
+                    infractionsMap.put(split[0], split[1]);
+                });
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "agencies" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
-                lines.skip(1)
-                        .map(line -> line.split(";"))
-                        .forEach(line -> agenciesMap.put(line[0], id.getAndIncrement()));
+//                lines.skip(1)
+//                        .map(line -> line.split(";"))
+//                        .forEach(line -> agenciesMap.put(line[0], id.getAndIncrement()));
+                lines.skip(1).forEach(line -> {
+                    String[] split = line.split(";");
+                    agenciesMap.put(split[0], id.getAndIncrement());
+                });
             }
 
             logger.info("Fin de lectura del archivo");
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<String, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<AgencyInfractionNamesPair, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<TotalTicketsResult>> future = job
-                    .keyPredicate(new ExcludeNonExistingAgenciesKeyPredicate())
+                    .keyPredicate(new TotalTicketsKeyPredicate())
                     .mapper(new TotalTicketsMapper())
                     .reducer(new TotalTicketsReducerFactory())
                     .submit(new TotalTicketsCollator(hazelcastInstance));
 
             // Wait and retrieve the result
             SortedSet<TotalTicketsResult> result = future.get();
-
-            // Destroy the data
-            ticketsMultiMap.destroy();
-            infractionsMap.destroy();
-            agenciesMap.destroy();
 
             // Sort entries ascending by count and print
             String header = "Infraction;Agency;Ticket";

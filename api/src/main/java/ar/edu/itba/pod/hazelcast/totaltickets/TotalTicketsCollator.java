@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class TotalTicketsCollator implements Collator<Map.Entry<AgencyInfractionPair, Long>, SortedSet<TotalTicketsResult>> {
+public class TotalTicketsCollator implements Collator<Map.Entry<AgencyInfractionIdsPair, Long>, SortedSet<TotalTicketsResult>> {
 
     private final HazelcastInstance hazelcastInstance;
 
@@ -19,7 +19,7 @@ public class TotalTicketsCollator implements Collator<Map.Entry<AgencyInfraction
     }
 
     @Override
-    public SortedSet<TotalTicketsResult> collate(Iterable<Map.Entry<AgencyInfractionPair, Long>> values) {
+    public SortedSet<TotalTicketsResult> collate(Iterable<Map.Entry<AgencyInfractionIdsPair, Long>> values) {
         IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
         IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
 
@@ -29,7 +29,7 @@ public class TotalTicketsCollator implements Collator<Map.Entry<AgencyInfraction
                         .thenComparing(TotalTicketsResult::agency)
         );
 
-        for (Map.Entry<AgencyInfractionPair, Long> entry : values) {
+        for (Map.Entry<AgencyInfractionIdsPair, Long> entry : values) {
             result.add(new TotalTicketsResult(
                     AgenciesMapUtils.getAgencyName(agenciesMap, entry.getKey().getAgencyId()),
                     infractionsMap.get(entry.getKey().getInfractionId()), entry.getValue()

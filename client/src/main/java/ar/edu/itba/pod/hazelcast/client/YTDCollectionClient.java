@@ -1,11 +1,7 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import ar.edu.itba.pod.hazelcast.common.ExcludeNonExistingAgenciesKeyPredicate;
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
-import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionCollator;
-import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionMapper;
-import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionReducerFactory;
-import ar.edu.itba.pod.hazelcast.ytdcollection.YTDCollectionResult;
+import ar.edu.itba.pod.hazelcast.ytdcollection.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -70,7 +66,7 @@ public class YTDCollectionClient extends Client {
             // MapReduce Job
             Job<String, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> future = job
-                    .keyPredicate(new ExcludeNonExistingAgenciesKeyPredicate())
+                    .keyPredicate(new YTDCollectionKeyPredicate())
                     .mapper(new YTDCollectionMapper())
                     .reducer(new YTDCollectionReducerFactory())
                     .submit(new YTDCollectionCollator(hazelcastInstance));

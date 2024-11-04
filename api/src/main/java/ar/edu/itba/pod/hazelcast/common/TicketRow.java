@@ -9,6 +9,7 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class TicketRow implements DataSerializable {
 
@@ -76,6 +77,19 @@ public class TicketRow implements DataSerializable {
         county = in.readUTF();
         amount = in.readInt();
         issueDate = in.readObject();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || obj instanceof TicketRow t
+                && plateId.equals(t.plateId) && infractionId.equals(t.infractionId)
+                && agency.equals(t.agency) && county.equals(t.county)
+                && amount == t.amount && issueDate.equals(t.issueDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(plateId, infractionId, agency, county, amount, issueDate);
     }
 
 }

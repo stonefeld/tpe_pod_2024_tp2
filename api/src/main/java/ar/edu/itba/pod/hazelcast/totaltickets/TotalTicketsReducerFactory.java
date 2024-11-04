@@ -3,10 +3,10 @@ package ar.edu.itba.pod.hazelcast.totaltickets;
 import com.hazelcast.mapreduce.Reducer;
 import com.hazelcast.mapreduce.ReducerFactory;
 
-public class TotalTicketsReducerFactory implements ReducerFactory<AgencyInfractionPair, Long, Long> {
+public class TotalTicketsReducerFactory implements ReducerFactory<AgencyInfractionIdsPair, Long, Long> {
 
     @Override
-    public Reducer<Long, Long> newReducer(AgencyInfractionPair key) {
+    public Reducer<Long, Long> newReducer(AgencyInfractionIdsPair key) {
         return new TotalTicketsReducer();
     }
 
