@@ -25,12 +25,13 @@ import java.util.stream.Stream;
 
 public class TotalTicketsClient extends Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(TotalTicketsClient.class);
-
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         try {
             // Parse all properties
             processProperties();
+
+            // Setup the logger
+            Logger logger = setUpLogger(TotalTicketsClient.class, "time1.txt");
 
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
@@ -103,7 +104,7 @@ public class TotalTicketsClient extends Client {
 
             logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
+            System.err.println(e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }

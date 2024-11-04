@@ -6,6 +6,8 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,6 +119,13 @@ public abstract class Client {
         }
 
         Files.write(Paths.get(outPath, fileName), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    public static Logger setUpLogger(Class<?> clazz, String fileName) {
+        if (outPath.isEmpty())
+            throw new IllegalArgumentException("Output path is required");
+        System.setProperty("log4j.outputname", Paths.get(outPath, fileName).toString());
+        return LoggerFactory.getLogger(clazz);
     }
 
 }

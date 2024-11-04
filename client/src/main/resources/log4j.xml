@@ -1,36 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration debug="false" xmlns:log4j='http://jakarta.apache.org/log4j/'>
-  <appender name="FileAppender" class="org.apache.log4j.FileAppender">
-    <param name="File" value="logs/timestamps.log"/>
-    <param name="Append" value="true"/>
+  <appender name="console" class="org.apache.log4j.ConsoleAppender">
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{dd/MM/yyyy HH:mm:ss:SSSS} %-5p [%t] %c (%F:%L) - %m%n"/>
+      <param name="ConversionPattern" value="%d{dd/MM/yyyy HH:mm:ss:SSSS} %-5p [%t] %c{1} (%F:%L) - %m%n"/>
     </layout>
-    <filter class="org.apache.log4j.varia.LevelRangeFilter">
-      <param name="LevelMin" value="INFO"/>
-      <param name="LevelMax" value="INFO"/>
-      <param name="AcceptOnMatch" value="true"/>
-    </filter>
-    <filter class="org.apache.log4j.varia.DenyAllFilter"/>
   </appender>
 
-  <appender name="ConsoleAppender" class="org.apache.log4j.ConsoleAppender">
-    <param name="Target" value="System.out"/>
+  <appender name="fileAppender" class="org.apache.log4j.FileAppender">
+    <param name="File" value="${log4j.outputname}"/>
+    <param name="Append" value="false"/>
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{dd/MM/yyyy HH:mm:ss:SSSS} %-5p [%t] %c (%F:%L) - %m%n"/>
+      <param name="ConversionPattern" value="%d{dd/MM/yyyy HH:mm:ss:SSSS} %-5p [%t] %c{1} (%F:%L) - %m%n"/>
     </layout>
-    <filter class="org.apache.log4j.varia.LevelRangeFilter">
-      <param name="LevelMin" value="WARN"/>
-      <param name="LevelMax" value="ERROR"/>
+    <filter class="org.apache.log4j.varia.LevelMatchFilter">
+      <param name="LevelToMatch" value="INFO"/>
       <param name="AcceptOnMatch" value="true"/>
     </filter>
-    <filter class="org.apache.log4j.varia.DenyAllFilter"/>
   </appender>
 
   <root>
-    <priority value="INFO"/>
-    <appender-ref ref="FileAppender"/>
-    <appender-ref ref="ConsoleAppender"/>
+    <level value="INFO"/>
+    <appender-ref ref="console"/>
+    <appender-ref ref="fileAppender"/>
   </root>
 </log4j:configuration>

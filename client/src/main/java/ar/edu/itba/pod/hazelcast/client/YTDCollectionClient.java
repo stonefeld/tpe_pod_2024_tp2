@@ -25,12 +25,13 @@ import java.util.stream.Stream;
 
 public class YTDCollectionClient extends Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(YTDCollectionClient.class);
-
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         try {
             // Parse all properties
             processProperties();
+
+            // Setup the logger
+            Logger logger = setUpLogger(TotalTicketsClient.class, "time2.txt");
 
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
@@ -87,7 +88,7 @@ public class YTDCollectionClient extends Client {
 
             logger.info("Fin del trabajo map/reduce");
         } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
+            System.err.println(e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }
