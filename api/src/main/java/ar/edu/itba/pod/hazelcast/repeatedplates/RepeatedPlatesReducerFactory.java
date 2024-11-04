@@ -34,13 +34,6 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
             String infractionId = value.getInfractionId();
             long count = value.getCount();
 
-//            repeatedInfractionsByPlate.putIfAbsent(plate, new HashMap<>());
-//            if (repeatedInfractionsByPlate.get(plate).containsKey(infraction)) {
-//                repeatedInfractionsByPlate.get(plate).put(infraction, repeatedInfractionsByPlate.get(plate).get(infraction) + count);
-//            } else {
-//                repeatedInfractionsByPlate.get(plate).put(infraction, count);
-//            }
-
             repeatedInfractionsByPlate.computeIfAbsent(plate, k -> new HashMap<>());
             repeatedInfractionsByPlate.get(plate).merge(infractionId, count, Long::sum);
         }

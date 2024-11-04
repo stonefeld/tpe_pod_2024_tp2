@@ -103,6 +103,27 @@ public class TotalTicketsClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
+
+            logger.info("Inicio del trabajo map/reduce (con Combiner)");
+
+            // MapReduce Job
+            Job<AgencyInfractionNamesPair, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            JobCompletableFuture<SortedSet<TotalTicketsResult>> combinerFuture = combinerJob
+                    .keyPredicate(new TotalTicketsKeyPredicate())
+                    .mapper(new TotalTicketsMapper())
+                    .combiner(new TotalTicketsCombinerFactory())
+                    .reducer(new TotalTicketsReducerFactory())
+                    .submit(new TotalTicketsCollator(hazelcastInstance));
+
+            // Wait and retrieve the result
+            SortedSet<TotalTicketsResult> combinerResult = combinerFuture.get();
+
+            // Sort entries ascending by count and print
+            String combinerFileName = "query1_combiner.csv";
+
+            writeToCSV(combinerFileName, header, combinerResult.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce (con Combiner)");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         } finally {

@@ -2,6 +2,7 @@ package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.repeatedplates.*;
+import ar.edu.itba.pod.hazelcast.ytdcollection.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
@@ -44,7 +45,7 @@ public class RepeatedPlatesClient extends Client {
 
             // Key Value Source
             MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<LocalDate, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            KeyValueSource<LocalDate, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker
             JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-repeated-plates");
@@ -62,7 +63,7 @@ public class RepeatedPlatesClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<LocalDate, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
+            Job<LocalDate, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<RepeatedPlatesResult>> future = job
                     .keyPredicate(new RepeatedPlatesKeyPredicate(from, to))
                     .mapper(new RepeatedPlatesMapper())
@@ -83,6 +84,27 @@ public class RepeatedPlatesClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
+
+            logger.info("Inicio del trabajo map/reduce (con Combiner)");
+
+            // MapReduce Job
+            Job<LocalDate, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            JobCompletableFuture<SortedSet<RepeatedPlatesResult>> combinerFuture = combinerJob
+                    .keyPredicate(new RepeatedPlatesKeyPredicate(from, to))
+                    .mapper(new RepeatedPlatesMapper())
+                    .combiner(new RepeatedPlatesCombinerFactory())
+                    .reducer(new RepeatedPlatesReducerFactoryWithCombiner(n))
+                    .submit(new RepeatedPlatesCollator());
+
+            // Wait and retrieve the result
+            SortedSet<RepeatedPlatesResult> combinerResult = combinerFuture.get();
+
+            // Sort entries ascending by count and print
+            String combinerFileName = "query3_combiner.csv";
+
+            writeToCSV(combinerFileName, header, combinerResult.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce (con Combiner)");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         } finally {

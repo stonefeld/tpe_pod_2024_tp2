@@ -2,6 +2,7 @@ package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.maxticketdifference.*;
+import ar.edu.itba.pod.hazelcast.repeatedplates.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -42,7 +44,7 @@ public class MaxTicketDifferenceClient extends Client {
 
             // Key Value Source
             MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<String, TicketRow> wordsKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
 
@@ -68,7 +70,7 @@ public class MaxTicketDifferenceClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<String, TicketRow> job = jobTracker.newJob(wordsKeyValueSource);
+            Job<String, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<MaxTicketDifferenceResult>> future = job
                     .keyPredicate(new MaxTicketDifferenceKeyPredicate(agency))
                     .mapper(new MaxTicketDifferenceMapper())
@@ -90,6 +92,27 @@ public class MaxTicketDifferenceClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
+
+            logger.info("Inicio del trabajo map/reduce (con Combiner)");
+
+            // MapReduce Job
+            Job<String, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            JobCompletableFuture<SortedSet<MaxTicketDifferenceResult>> combinerFuture = combinerJob
+                    .keyPredicate(new MaxTicketDifferenceKeyPredicate(agency))
+                    .mapper(new MaxTicketDifferenceMapper())
+                    .combiner(new MaxTicketDifferenceCombinerFactory())
+                    .reducer(new MaxTicketDifferenceReducerFactoryWithCombiner())
+                    .submit(new MaxTicketDifferenceCollator(hazelcastInstance, n));
+
+            // Wait and retrieve the result
+            SortedSet<MaxTicketDifferenceResult> combinerResult = combinerFuture.get();
+
+            // Sort entries ascending by count and print
+            String combinerFileName = "query4_combiner.csv";
+
+            writeToCSV(combinerFileName, header, combinerResult.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce (con Combiner)");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         } finally {

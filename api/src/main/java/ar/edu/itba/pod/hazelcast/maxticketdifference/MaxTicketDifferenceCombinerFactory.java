@@ -30,7 +30,6 @@ public class MaxTicketDifferenceCombinerFactory implements CombinerFactory<Strin
 
             @Override
             public IntegerPair finalizeChunk() {
-                // TODO: Check if this is the correct way to return
                 return new IntegerPair(max, min);
             }
 
