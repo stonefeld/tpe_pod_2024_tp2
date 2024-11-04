@@ -36,5 +36,7 @@ public class RepeatedPlatesCombinerFactory implements CombinerFactory<String, Pl
         public Map<String, Map<String, Long>> finalizeChunk() {
             return new HashMap<>(localCountByInfraction);
         }
+
     }
+
 }

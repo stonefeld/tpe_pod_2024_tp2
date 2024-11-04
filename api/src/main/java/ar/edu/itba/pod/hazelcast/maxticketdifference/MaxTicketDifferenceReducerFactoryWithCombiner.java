@@ -16,9 +16,11 @@ public class MaxTicketDifferenceReducerFactoryWithCombiner implements ReducerFac
 
         @Override
         public void reduce(IntegerPair pair) {
-            if (max == null || pair.getMax() > max)
+            Integer pairMax = pair.getMax(), pairMin = pair.getMin();
+
+            if (pairMax != null && (max == null || pairMax > max))
                 max = pair.getMax();
-            if (min == null || pair.getMin() < min)
+            if (pairMin != null && (min == null || pairMin < min))
                 min = pair.getMin();
         }
 
