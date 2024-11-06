@@ -86,6 +86,7 @@ nb-configuration.xml
 ## Miscellaneous
 ##############################
 *.log
+!/test/**/*.csv
 *.csv
 *.txt
 Session.vim
