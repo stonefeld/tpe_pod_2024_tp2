@@ -29,7 +29,7 @@ public class RepeatedPlatesClient extends Client {
             processProperties();
 
             // Setup the logger
-            Logger logger = setUpLogger(TotalTicketsClient.class, "time3.txt");
+            Logger logger = setUpLogger(RepeatedPlatesClient.class, "time3.txt");
 
             if (n == null)
                 throw new IllegalArgumentException("N is required");

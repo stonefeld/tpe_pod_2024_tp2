@@ -30,7 +30,7 @@ public class YTDCollectionClient extends Client {
             processProperties();
 
             // Setup the logger
-            Logger logger = setUpLogger(TotalTicketsClient.class, "time2.txt");
+            Logger logger = setUpLogger(YTDCollectionClient.class, "time2.txt");
 
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();

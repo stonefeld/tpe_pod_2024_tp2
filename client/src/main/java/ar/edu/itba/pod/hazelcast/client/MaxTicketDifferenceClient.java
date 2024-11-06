@@ -29,7 +29,7 @@ public class MaxTicketDifferenceClient extends Client {
             processProperties();
 
             // Setup the logger
-            Logger logger = setUpLogger(TotalTicketsClient.class, "time4.txt");
+            Logger logger = setUpLogger(MaxTicketDifferenceClient.class, "time4.txt");
 
             if (n == null)
                 throw new IllegalArgumentException("N is required");

@@ -25,7 +25,6 @@ public class MaxTicketDifferenceCollator implements Collator<Map.Entry<String, I
 
         SortedSet<MaxTicketDifferenceResult> result = new TreeSet<>(cmp);
         SortedSet<MaxTicketDifferenceResult> top = new TreeSet<>(cmp);
-        System.out.println(Arrays.toString(result.toArray()));
 
         for (Map.Entry<String, IntegerPair> entry : values) {
             result.add(new MaxTicketDifferenceResult(
