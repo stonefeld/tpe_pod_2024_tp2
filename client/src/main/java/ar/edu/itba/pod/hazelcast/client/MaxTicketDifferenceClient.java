@@ -2,7 +2,6 @@ package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.maxticketdifference.*;
-import ar.edu.itba.pod.hazelcast.repeatedplates.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;

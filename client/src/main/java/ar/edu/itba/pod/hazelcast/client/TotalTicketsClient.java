@@ -96,7 +96,7 @@ public class TotalTicketsClient extends Client {
             SortedSet<TotalTicketsResult> result = future.get();
 
             // Sort entries ascending by count and print
-            String header = "Infraction;Agency;Ticket";
+            String header = "Infraction;Agency;Tickets";
             String fileName = "query1.csv";
             Function<TotalTicketsResult, String> csvLineMapper = TotalTicketsResult::toString;
 
