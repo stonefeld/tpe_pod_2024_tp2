@@ -38,7 +38,7 @@ gradle-app.setting
 ##############################
 ## IntelliJ
 ##############################
-csv/out/
+csv/un_nodo/
 .idea/
 .idea_modules/
 *.iml

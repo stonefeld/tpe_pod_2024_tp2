@@ -23,6 +23,9 @@ import java.util.function.Function;
 
 public abstract class Client {
 
+    private static Function<String[], TicketRow> mapperNYC = line -> new TicketRow(line[0], line[1], line[3], line[5], (int) Double.parseDouble(line[2]), line[4]);
+    private static Function<String[], TicketRow> mapperCHI = line -> new TicketRow(line[3], line[4], line[2], line[1], (int) Double.parseDouble(line[5]), line[0]);
+
     // Required by all queries
     protected static String[] addresses;
     protected static String city, inPath, outPath;
@@ -35,8 +38,8 @@ public abstract class Client {
     // Optional arguments
     protected static String clusterName, clusterPassword;
 
-    protected static Function<String[], TicketRow> mapperNYC = line -> new TicketRow(line[0], line[1], line[3], line[5], (int) Double.parseDouble(line[2]), line[4]);
-    protected static Function<String[], TicketRow> mapperCHI = line -> new TicketRow(line[3], line[4], line[2], line[1], (int) Double.parseDouble(line[5]), line[0]);
+    // Mapper para crear el TicketRow a partir del csv
+    protected static Function<String[], TicketRow> mapper;
 
     public static void processProperties() {
         addresses = System.getProperty("addresses", "").split(";");
@@ -48,9 +51,11 @@ public abstract class Client {
             throw new IllegalArgumentException("IP addresses are required");
         }
 
-        if (city.compareTo("NYC") != 0 && city.compareTo("CHI") != 0) {
-            throw new IllegalArgumentException("City is required");
-        }
+        mapper = switch(city) {
+            case "NYC" -> mapperNYC;
+            case "CHI" -> mapperCHI;
+            default -> throw new IllegalArgumentException("A valid city is required");
+        };
 
         if (inPath.isEmpty()) {
             throw new IllegalArgumentException("Input path is required");

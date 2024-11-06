@@ -50,20 +50,13 @@ public class TotalTicketsClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
-                Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
-//                lines.skip(1).map(line -> line.split(";")).map(mapper)
-//                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
                 lines.skip(1).forEach(line -> {
-                    String[] split = line.split(";");
-                    TicketRow ticketRow = mapper.apply(split);
+                    TicketRow ticketRow = mapper.apply(line.split(";"));
                     ticketsMultiMap.put(new AgencyInfractionNamesPair(ticketRow.getAgency(), ticketRow.getInfractionId()), ticketRow);
                 });
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "infractions" + city + ".csv"), StandardCharsets.UTF_8)) {
-//                lines.skip(1)
-//                        .map(line -> line.split(";"))
-//                        .forEach(line -> infractionsMap.put(line[0], line[1]));
                 lines.skip(1).forEach(line -> {
                     String[] split = line.split(";");
                     infractionsMap.put(split[0], split[1]);
@@ -72,9 +65,6 @@ public class TotalTicketsClient extends Client {
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "agencies" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
-//                lines.skip(1)
-//                        .map(line -> line.split(";"))
-//                        .forEach(line -> agenciesMap.put(line[0], id.getAndIncrement()));
                 lines.skip(1).forEach(line -> {
                     String[] split = line.split(";");
                     agenciesMap.put(split[0], id.getAndIncrement());
@@ -103,7 +93,6 @@ public class TotalTicketsClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
-
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job

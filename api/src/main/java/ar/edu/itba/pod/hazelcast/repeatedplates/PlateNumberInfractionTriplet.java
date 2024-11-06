@@ -49,10 +49,9 @@ public class PlateNumberInfractionTriplet implements DataSerializable {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof PlateNumberInfractionTriplet plateNumberPair &&
-                plate.equals(plateNumberPair.plate) && count == plateNumberPair.count &&
-                infractionId.equals(plateNumberPair.infractionId
-                );
+        return obj instanceof PlateNumberInfractionTriplet plateNumberPair
+                && plate.equals(plateNumberPair.plate) && count == plateNumberPair.count
+                && infractionId.equals(plateNumberPair.infractionId);
     }
 
     @Override

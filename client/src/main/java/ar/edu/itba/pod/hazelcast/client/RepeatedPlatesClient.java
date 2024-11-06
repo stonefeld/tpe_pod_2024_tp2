@@ -52,9 +52,10 @@ public class RepeatedPlatesClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
-                Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
-                lines.skip(1).map(line -> line.split(";")).map(mapper)
-                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getIssueDate(), ticketRow));
+                lines.skip(1).forEach(line -> {
+                    TicketRow ticketRow = mapper.apply(line.split(";"));
+                    ticketsMultiMap.put(ticketRow.getIssueDate(), ticketRow);
+                });
             }
 
             logger.info("Fin de lectura del archivo");
@@ -79,7 +80,6 @@ public class RepeatedPlatesClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
-
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job

@@ -48,16 +48,18 @@ public class YTDCollectionClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
-                Function<String[], TicketRow> mapper = city.equals("NYC") ? mapperNYC : mapperCHI;
-                lines.skip(1).map(line -> line.split(";")).map(mapper)
-                        .forEach(ticketRow -> ticketsMultiMap.put(ticketRow.getAgency(), ticketRow));
+                lines.skip(1).forEach(line -> {
+                    TicketRow ticketRow = mapper.apply(line.split(";"));
+                    ticketsMultiMap.put(ticketRow.getAgency(), ticketRow);
+                });
             }
 
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "agencies" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
-                lines.skip(1)
-                        .map(line -> line.split(";"))
-                        .forEach(line -> agenciesMap.put(line[0], id.getAndIncrement()));
+                lines.skip(1).forEach(line -> {
+                    String[] split = line.split(";");
+                    agenciesMap.put(split[0], id.getAndIncrement());
+                });
             }
 
             logger.info("Fin de lectura del archivo");
@@ -82,7 +84,6 @@ public class YTDCollectionClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
-
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
