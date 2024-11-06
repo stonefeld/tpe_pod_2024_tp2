@@ -7,25 +7,20 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 import java.util.Objects;
 
-public class AgencyMonthYearTriplet implements DataSerializable {
+public class AgencyYearPair implements DataSerializable {
 
-    private int agencyId, month, year;
+    private int agencyId, year;
 
-    public AgencyMonthYearTriplet() {
+    public AgencyYearPair() {
     }
 
-    public AgencyMonthYearTriplet(int agencyId, int month, int year) {
+    public AgencyYearPair(int agencyId, int year) {
         this.agencyId = agencyId;
-        this.month = month;
         this.year = year;
     }
 
     public int getAgencyId() {
         return agencyId;
-    }
-
-    public int getMonth() {
-        return month;
     }
 
     public int getYear() {
@@ -35,25 +30,23 @@ public class AgencyMonthYearTriplet implements DataSerializable {
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeInt(agencyId);
-        out.writeInt(month);
         out.writeInt(year);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
         agencyId = in.readInt();
-        month = in.readInt();
         year = in.readInt();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof AgencyMonthYearTriplet agencyMonthYearTriplet && month == agencyMonthYearTriplet.month && year == agencyMonthYearTriplet.year && agencyId == agencyMonthYearTriplet.agencyId;
+        return obj instanceof AgencyYearPair agencyYearPair && year == agencyYearPair.year && agencyId == agencyYearPair.agencyId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(agencyId, month, year);
+        return Objects.hash(agencyId, year);
     }
 
 }

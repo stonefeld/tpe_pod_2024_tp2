@@ -5,12 +5,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Collator;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
-public class YTDCollectionCollator implements Collator<Map.Entry<AgencyMonthYearTriplet, Integer>, SortedSet<YTDCollectionResult>> {
+public class YTDCollectionCollator implements Collator<Map.Entry<AgencyYearPair, SortedMap<Integer, Integer>>, SortedSet<YTDCollectionResult>> {
 
     private final HazelcastInstance hazelcastInstance;
 
@@ -19,7 +16,7 @@ public class YTDCollectionCollator implements Collator<Map.Entry<AgencyMonthYear
     }
 
     @Override
-    public SortedSet<YTDCollectionResult> collate(Iterable<Map.Entry<AgencyMonthYearTriplet, Integer>> values) {
+    public SortedSet<YTDCollectionResult> collate(Iterable<Map.Entry<AgencyYearPair, SortedMap<Integer, Integer>>> values) {
         IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
         SortedSet<YTDCollectionResult> result = new TreeSet<>(
@@ -28,13 +25,14 @@ public class YTDCollectionCollator implements Collator<Map.Entry<AgencyMonthYear
                         .thenComparing(YTDCollectionResult::month)
         );
 
-        for (Map.Entry<AgencyMonthYearTriplet, Integer> entry : values) {
-            result.add(new YTDCollectionResult(
-                    AgenciesMapUtils.getAgencyName(agenciesMap, entry.getKey().getAgencyId()),
-                    entry.getKey().getYear(),
-                    entry.getKey().getMonth(),
-                    entry.getValue())
-            );
+        for (Map.Entry<AgencyYearPair, SortedMap<Integer, Integer>> entry : values) {
+            int year = entry.getKey().getYear(), sum = 0;
+            String agencyName = AgenciesMapUtils.getAgencyName(agenciesMap, entry.getKey().getAgencyId());
+
+            for (Map.Entry<Integer, Integer> monthEntry : entry.getValue().entrySet()) {
+                sum += monthEntry.getValue();
+                result.add(new YTDCollectionResult(agencyName, year, monthEntry.getKey(), sum));
+            }
         }
 
         return result;

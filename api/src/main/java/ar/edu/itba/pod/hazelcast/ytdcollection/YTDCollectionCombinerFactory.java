@@ -3,10 +3,10 @@ package ar.edu.itba.pod.hazelcast.ytdcollection;
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 
-public class YTDCollectionCombinerFactory implements CombinerFactory<AgencyMonthYearTriplet, Integer, Integer> {
+public class YTDCollectionCombinerFactory implements CombinerFactory<AgencyYearPair, Integer, Integer> {
 
     @Override
-    public Combiner<Integer, Integer> newCombiner(AgencyMonthYearTriplet key) {
+    public Combiner<Integer, Integer> newCombiner(AgencyYearPair key) {
         return new YTDCollectionCombiner();
     }
 

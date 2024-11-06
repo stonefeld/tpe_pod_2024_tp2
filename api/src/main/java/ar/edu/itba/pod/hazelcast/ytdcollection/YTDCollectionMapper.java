@@ -6,14 +6,21 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class YTDCollectionMapper implements Mapper<String, TicketRow, AgencyMonthYearTriplet, Integer> {
+public class YTDCollectionMapper implements Mapper<String, TicketRow, AgencyYearPair, MonthAmountPair> {
 
     @Override
-    public void map(String key, TicketRow value, Context<AgencyMonthYearTriplet, Integer> context) {
+    public void map(String key, TicketRow value, Context<AgencyYearPair, MonthAmountPair> context) {
         IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g2-tpe2").getMap("g2-agencies");
-        for (int i = value.getIssueDate().getMonthValue(); i <= 12; i++) {
-            context.emit(new AgencyMonthYearTriplet(agenciesMap.get(value.getAgency()), i, value.getIssueDate().getYear()), value.getAmount());
-        }
+        context.emit(
+                new AgencyYearPair(agenciesMap.get(value.getAgency()), value.getIssueDate().getYear()),
+                new MonthAmountPair(value.getAmount(), value.getIssueDate().getMonthValue())
+        );
+//        for (int i = value.getIssueDate().getMonthValue(); i <= 12; i++) {
+//            context.emit(
+//                    new AgencyMonthYearTriplet(agenciesMap.get(value.getAgency()), i, value.getIssueDate().getYear()),
+//                    new CollectedAmount(value.getAmount(), i == value.getIssueDate().getMonthValue())
+//            );
+//        }
     }
 
 }
