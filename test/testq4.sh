@@ -14,7 +14,7 @@ cd ./bin/server
 PID=$!
 cd ../..
 
-sleep 6
+sleep 4
 
 mkdir -p ./test/results
 
@@ -25,7 +25,7 @@ cd ./bin/client
 
 ./query4.sh -Daddresses=127.0.0.1:5701 -Dcity=NYC  -DinPath=../../test/data/ -DoutPath=../../test/results/ -Dn=3 -Dagency=DEPARTMENT_OF_TRANSPORTATION > /dev/null 2>&1
 
-sleep 3
+sleep 1
 
 cd ../..
 
@@ -40,7 +40,7 @@ if [ ! -z "$PID" ]; then
 else
     echo "Process not found."
 fi
-sleep 5
+sleep 2
 
 echo "Query 4: Testing results"
 

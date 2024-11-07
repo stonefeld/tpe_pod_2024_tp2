@@ -14,7 +14,7 @@ cd ./bin/server
 PID=$!
 cd ../..
 
-sleep 6
+sleep 4
 
 mkdir -p ./test/results
 
@@ -40,7 +40,7 @@ if [ ! -z "$PID" ]; then
 else
     echo "Process not found."
 fi
-sleep 5
+sleep 2
 
 echo "Query 1: Testing results"
 
