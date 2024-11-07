@@ -32,9 +32,9 @@ cd ../..
 echo "Query 1: Killing server"
 
 if [ ! -z "$PID" ]; then
-    PPID_COL=$(ps aux | head -n 1 | tr -s ' ' '\n' | nl | grep -w "PPID" | awk '{print $1}')
-    PID_COL=$(ps aux | head -n 1 | tr -s ' ' '\n' | nl | grep -w "PID" | awk '{print $1}')
-    ps aux | awk -v pid="$PID" -v ppid_col="$PPID_COL" -v pid_col="$PID_COL" '{ if ($ppid_col == pid) print $pid_col }' | xargs -r kill
+    PPID_COL=$(ps all | head -n 1 | tr -s ' ' '\n' | nl | grep -w "PPID" | awk '{print $1}')
+    PID_COL=$(ps all | head -n 1 | tr -s ' ' '\n' | nl | grep -w "PID" | awk '{print $1}')
+    ps all | awk -v pid="$PID" -v ppid_col="$PPID_COL" -v pid_col="$PID_COL" '{ if ($ppid_col == pid) print $pid_col }' | xargs -r kill
     kill $PID
 
 else
@@ -44,6 +44,7 @@ sleep 2
 
 echo "Query 1: Testing results"
 
+sed -i 's/\r$//' ./test/results/query1.csv ./test/expected/expected-q1.csv
 diff -q ./test/results/query1.csv ./test/expected/expected-q1.csv >> /dev/null
 
 if [ $? -eq 0 ]; then
