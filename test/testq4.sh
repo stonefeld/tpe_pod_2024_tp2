@@ -5,7 +5,7 @@ print_error() {
     exit 1
 }
 
-echo "Query 1: Initializing server"
+echo "Query 4: Initializing server"
 cd ..
 cd ./bin/server
 ./server.sh > /dev/null 2>&1 &
@@ -18,18 +18,18 @@ sleep 4
 
 mkdir -p ./test/results
 
-echo "Query 1: Running client"
+echo "Query 4: Running client"
 
 [ -d ./bin/client ] || print_error "Client directory not found"
 cd ./bin/client
 
-./query1.sh -DinPath=../../test/data/ -DoutPath=../../test/results/ -Dcity=NYC -Daddresses=127.0.0.1:5701 > /dev/null 2>&1
+./query4.sh -Daddresses=127.0.0.1:5701 -Dcity=NYC  -DinPath=../../test/data/ -DoutPath=../../test/results/ -Dn=3 -Dagency=DEPARTMENT_OF_TRANSPORTATION > /dev/null 2>&1
 
 sleep 1
 
 cd ../..
 
-echo "Query 1: Killing server"
+echo "Query 4: Killing server"
 
 if [ ! -z "$PID" ]; then
     PPID_COL=$(ps aux | head -n 1 | tr -s ' ' '\n' | nl | grep -w "PPID" | awk '{print $1}')
@@ -42,12 +42,12 @@ else
 fi
 sleep 2
 
-echo "Query 1: Testing results"
+echo "Query 4: Testing results"
 
-diff -q ./test/results/query1.csv ./test/expected/expected-q1.csv >> /dev/null
+diff -q ./test/results/query4.csv ./test/expected/expected-q4.csv >> /dev/null
 
 if [ $? -eq 0 ]; then
-    echo -e "\e[32mQuery 1: TEST PASSED\e[0m"
+    echo -e "\e[32mQuery 4: TEST PASSED\e[0m"
 else
-    echo -e "\e[31mQuery 1: FAILED\e[0m"
+    echo -e "\e[31mQuery 4: FAILED\e[0m"
 fi
