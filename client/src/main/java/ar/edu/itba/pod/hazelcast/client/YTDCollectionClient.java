@@ -1,7 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import ar.edu.itba.pod.hazelcast.common.AgencyIssueDateAmountTriplet;
-import ar.edu.itba.pod.hazelcast.common.TicketRow;
+import ar.edu.itba.pod.hazelcast.common.IssueDateAmountPair;
 import ar.edu.itba.pod.hazelcast.ytdcollection.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
@@ -43,8 +42,8 @@ public class YTDCollectionClient extends Client {
             hazelcastInstance.getMap("g2-agencies").destroy();
 
             // Key Value Source
-            MultiMap<String, AgencyIssueDateAmountTriplet> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<String, AgencyIssueDateAmountTriplet> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<String, IssueDateAmountPair> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            KeyValueSource<String, IssueDateAmountPair> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
@@ -60,7 +59,7 @@ public class YTDCollectionClient extends Client {
                     String[] split = line.split(";");
                     LocalDate issueDate = LocalDate.parse(split[4], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     double amount = Double.parseDouble(split[2]);
-                    ticketsMultiMap.put(split[3], new AgencyIssueDateAmountTriplet(id.getAndIncrement(), split[3], issueDate, amount));
+                    ticketsMultiMap.put(split[3], new IssueDateAmountPair(id.getAndIncrement(), issueDate, amount));
                 });
             }
 
@@ -76,7 +75,7 @@ public class YTDCollectionClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<String, AgencyIssueDateAmountTriplet> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, IssueDateAmountPair> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> future = job
                     .keyPredicate(new YTDCollectionKeyPredicate())
                     .mapper(new YTDCollectionMapper())
@@ -97,7 +96,7 @@ public class YTDCollectionClient extends Client {
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
-            Job<String, AgencyIssueDateAmountTriplet> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, IssueDateAmountPair> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> combinerFuture = combinerJob
                     .keyPredicate(new YTDCollectionKeyPredicate())
                     .mapper(new YTDCollectionMapper())

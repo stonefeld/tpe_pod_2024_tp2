@@ -6,29 +6,23 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class AgencyIssueDateAmountTriplet implements DataSerializable {
+public class IssueDateAmountPair implements DataSerializable {
 
     private int id;
-    private String agency;
     private LocalDate issueDate;
     private double amount;
 
-    public AgencyIssueDateAmountTriplet() {
+    public IssueDateAmountPair() {
     }
 
-    public AgencyIssueDateAmountTriplet(int id, String agency, LocalDate issueDate, double amount) {
+    public IssueDateAmountPair(int id, LocalDate issueDate, double amount) {
         this.id = id;
-        this.agency = agency;
         this.issueDate = issueDate;
         this.amount = amount;
     }
 
     public int getId() {
         return id;
-    }
-
-    public String getAgency() {
-        return agency;
     }
 
     public LocalDate getIssueDate() {
@@ -42,7 +36,6 @@ public class AgencyIssueDateAmountTriplet implements DataSerializable {
     @Override
     public void writeData(com.hazelcast.nio.ObjectDataOutput out) throws IOException {
         out.writeInt(id);
-        out.writeUTF(agency);
         out.writeLong(issueDate.toEpochDay());
         out.writeDouble(amount);
     }
@@ -50,7 +43,6 @@ public class AgencyIssueDateAmountTriplet implements DataSerializable {
     @Override
     public void readData(com.hazelcast.nio.ObjectDataInput in) throws IOException {
         id = in.readInt();
-        agency = in.readUTF();
         issueDate = LocalDate.ofEpochDay(in.readLong());
         amount = in.readDouble();
     }
@@ -58,13 +50,13 @@ public class AgencyIssueDateAmountTriplet implements DataSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AgencyIssueDateAmountTriplet that)) return false;
-        return id == that.id && Double.compare(amount, that.amount) == 0 && Objects.equals(agency, that.agency) && Objects.equals(issueDate, that.issueDate);
+        if (!(o instanceof IssueDateAmountPair that)) return false;
+        return id == that.id && Double.compare(amount, that.amount) == 0 && Objects.equals(issueDate, that.issueDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, agency, issueDate, amount);
+        return Objects.hash(id, issueDate, amount);
     }
 
 }
