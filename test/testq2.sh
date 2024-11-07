@@ -49,6 +49,8 @@ diff -q ./test/results/query2.csv ./test/expected/expected-q2.csv >> /dev/null
 
 if [ $? -eq 0 ]; then
     echo -e "\e[32mQuery 2: TEST PASSED\e[0m"
+    exit 0
 else
     echo -e "\e[31mQuery 2: FAILED\e[0m"
+    exit 1
 fi

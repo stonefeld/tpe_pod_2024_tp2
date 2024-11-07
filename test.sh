@@ -1,14 +1,16 @@
 #!/bin/bash
 
-./tpe_builder.sh -c -s -C
+chmod +x ./tpe_builder.sh
+./tpe_builder.sh -c -s -C || exit 1
+cd test || exit 1
 
-cd test
+errors=0
 
 for file in ./*; do
-
-    if [ ! -f $file ]; then
-        continue
-    fi
-    echo "===== RUNNING TEST $file ====="
-    $file
+    [ -f $file ] || continue
+    chmod +x $file
+    printf "\n===== RUNNING TEST $file =====\n"
+    $file || errors=1
 done
+
+exit $errors
