@@ -56,6 +56,10 @@ public class TicketRow implements DataSerializable {
         return amount;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public LocalDate getIssueDate() {
         return issueDate;
     }
@@ -96,16 +100,4 @@ public class TicketRow implements DataSerializable {
         return Objects.hash(plateId, infractionId, agency, county, amount, id, issueDate);
     }
 
-    @Override
-    public String toString() {
-        return "TicketRow{" +
-                "plateId='" + plateId + '\'' +
-                ", infractionId='" + infractionId + '\'' +
-                ", agency='" + agency + '\'' +
-                ", county='" + county + '\'' +
-                ", amount=" + amount +
-                ", id=" + id +
-                ", issueDate=" + issueDate +
-                '}';
-    }
 }

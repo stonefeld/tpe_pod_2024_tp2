@@ -23,8 +23,8 @@ import java.util.function.Function;
 
 public abstract class Client {
 
-    private static Function<Pair<String[], Integer>, TicketRow> mapperNYC = pair -> new TicketRow(pair.left[0], pair.left[1], pair.left[3], pair.left[5], (int) Double.parseDouble(pair.left[2]), pair.right, pair.left[4]);
-    private static Function<Pair<String[], Integer>, TicketRow> mapperCHI = pair -> new TicketRow(pair.left[3], pair.left[4], pair.left[2], pair.left[1], (int) Double.parseDouble(pair.left[5]), pair.right, pair.left[0]);
+    private static final Function<Pair<String[], Integer>, TicketRow> mapperNYC = pair -> new TicketRow(pair.left[0], pair.left[1], pair.left[3], pair.left[5], (int) Double.parseDouble(pair.left[2]), pair.right, pair.left[4]);
+    private static final Function<Pair<String[], Integer>, TicketRow> mapperCHI = pair -> new TicketRow(pair.left[3], pair.left[4], pair.left[2], pair.left[1], (int) Double.parseDouble(pair.left[5]), pair.right, pair.left[0]);
 
     // Required by all queries
     protected static String[] addresses;
@@ -38,7 +38,7 @@ public abstract class Client {
     // Optional arguments
     protected static String clusterName, clusterPassword;
 
-    // Mapper para crear el TicketRow a partir del csv
+    // Mapper to create TicketRow from each CSV line
     protected static Function<Pair<String[], Integer>, TicketRow> mapper;
 
     public static void processProperties() {
@@ -47,9 +47,8 @@ public abstract class Client {
         inPath = System.getProperty("inPath", "");
         outPath = System.getProperty("outPath", "");
 
-        if (addresses.length == 0) {
+        if (addresses.length == 0)
             throw new IllegalArgumentException("IP addresses are required");
-        }
 
         mapper = switch(city) {
             case "NYC" -> mapperNYC;
@@ -57,13 +56,10 @@ public abstract class Client {
             default -> throw new IllegalArgumentException("A valid city is required");
         };
 
-        if (inPath.isEmpty()) {
+        if (inPath.isEmpty())
             throw new IllegalArgumentException("Input path is required");
-        }
-
-        if (outPath.isEmpty()) {
+        if (outPath.isEmpty())
             throw new IllegalArgumentException("Output path is required");
-        }
 
         String nStr = System.getProperty("n", "");
         String fromStr = System.getProperty("from", "");
@@ -118,11 +114,8 @@ public abstract class Client {
     public static <T> void writeToCSV(String fileName, String header, Iterator<T> dataList, Function<T, String> csvLineMapper) throws IOException {
         List<String> lines = new ArrayList<>();
         lines.add(header);
-
-        while (dataList.hasNext()) {
+        while (dataList.hasNext())
             lines.add(csvLineMapper.apply(dataList.next()));
-        }
-
         Files.write(Paths.get(outPath, fileName), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 

@@ -41,6 +41,7 @@ public class RepeatedPlatesReducerFactory implements ReducerFactory<String, Plat
         @Override
         public Double finalizeReduce() {
             double repeatedPlates = 0;
+
             for (Map.Entry<String, Map<String, Long>> plateEntry : repeatedInfractionsByPlate.entrySet()) {
                 for (Map.Entry<String, Long> infractionEntry : plateEntry.getValue().entrySet()) {
                     if (infractionEntry.getValue() >= n) {
