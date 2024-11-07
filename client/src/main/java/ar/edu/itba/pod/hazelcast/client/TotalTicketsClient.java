@@ -36,8 +36,13 @@ public class TotalTicketsClient extends Client {
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
+            // Limpiamos los datos
+            hazelcastInstance.getMultiMap("g2-tickets").destroy();
+            hazelcastInstance.getMap("g2-agencies").destroy();
+            hazelcastInstance.getMap("g2-infractions").destroy();
+
             // Key Value Source
-            MultiMap<AgencyInfractionNamesPair, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query1-" + city);
+            MultiMap<AgencyInfractionNamesPair, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<AgencyInfractionNamesPair, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");

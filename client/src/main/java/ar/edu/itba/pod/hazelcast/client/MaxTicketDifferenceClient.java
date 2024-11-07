@@ -39,8 +39,12 @@ public class MaxTicketDifferenceClient extends Client {
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
+            // Limpiamos los datos
+            hazelcastInstance.getMultiMap("g2-tickets").destroy();
+            hazelcastInstance.getMap("g2-infractions").destroy();
+
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query4-" + city);
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");

@@ -41,8 +41,13 @@ public class RepeatedPlatesClient extends Client {
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
+            // Limpiamos los datos
+            hazelcastInstance.getMultiMap("g2-tickets").destroy();
+            hazelcastInstance.getMap("g2-agencies").destroy();
+            hazelcastInstance.getMap("g2-infractions").destroy();
+
             // Key Value Source
-            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query3-" + city);
+            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<LocalDate, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker

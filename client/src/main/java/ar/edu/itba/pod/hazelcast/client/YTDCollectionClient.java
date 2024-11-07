@@ -35,8 +35,12 @@ public class YTDCollectionClient extends Client {
             // Node Client
             HazelcastInstance hazelcastInstance = getHazelcastInstance();
 
+            // Limpiamos los datos
+            hazelcastInstance.getMultiMap("g2-tickets").destroy();
+            hazelcastInstance.getMap("g2-agencies").destroy();
+
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets-query2-" + city);
+            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
             KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
@@ -84,26 +88,26 @@ public class YTDCollectionClient extends Client {
             writeToCSV(fileName, header, result.iterator(), csvLineMapper);
 
             logger.info("Fin del trabajo map/reduce");
-//            logger.info("Inicio del trabajo map/reduce (con Combiner)");
-//
-//            // MapReduce Job
-//            Job<String, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
-//            JobCompletableFuture<SortedSet<YTDCollectionResult>> combinerFuture = combinerJob
-//                    .keyPredicate(new YTDCollectionKeyPredicate())
-//                    .mapper(new YTDCollectionMapper())
-//                    .combiner(new YTDCollectionCombinerFactory())
-//                    .reducer(new YTDCollectionReducerFactory())
-//                    .submit(new YTDCollectionCollator(hazelcastInstance));
-//
-//            // Wait and retrieve the result
-//            SortedSet<YTDCollectionResult> combinerResult = combinerFuture.get();
-//
-//            // Sort entries ascending by count and print
-//            String combinerFileName = "query2_combiner.csv";
-//
-//            writeToCSV(combinerFileName, header, combinerResult.iterator(), csvLineMapper);
-//
-//            logger.info("Fin del trabajo map/reduce (con Combiner)");
+            logger.info("Inicio del trabajo map/reduce (con Combiner)");
+
+            // MapReduce Job
+            Job<String, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            JobCompletableFuture<SortedSet<YTDCollectionResult>> combinerFuture = combinerJob
+                    .keyPredicate(new YTDCollectionKeyPredicate())
+                    .mapper(new YTDCollectionMapper())
+                    .combiner(new YTDCollectionCombinerFactory())
+                    .reducer(new YTDCollectionReducerFactoryWithCombiner())
+                    .submit(new YTDCollectionCollator(hazelcastInstance));
+
+            // Wait and retrieve the result
+            SortedSet<YTDCollectionResult> combinerResult = combinerFuture.get();
+
+            // Sort entries ascending by count and print
+            String combinerFileName = "query2_combiner.csv";
+
+            writeToCSV(combinerFileName, header, combinerResult.iterator(), csvLineMapper);
+
+            logger.info("Fin del trabajo map/reduce (con Combiner)");
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
         } finally {

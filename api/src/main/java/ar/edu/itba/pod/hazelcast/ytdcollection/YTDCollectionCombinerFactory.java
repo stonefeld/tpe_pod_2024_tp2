@@ -3,30 +3,35 @@ package ar.edu.itba.pod.hazelcast.ytdcollection;
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 
-public class YTDCollectionCombinerFactory implements CombinerFactory<AgencyYearPair, Integer, Integer> {
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+public class YTDCollectionCombinerFactory implements CombinerFactory<AgencyYearPair, MonthAmountPair, SortedMap<Integer, Integer>> {
 
     @Override
-    public Combiner<Integer, Integer> newCombiner(AgencyYearPair key) {
+    public Combiner<MonthAmountPair, SortedMap<Integer, Integer>> newCombiner(AgencyYearPair key) {
         return new YTDCollectionCombiner();
     }
 
-    private static class YTDCollectionCombiner extends Combiner<Integer, Integer> {
-        private int sum = 0;
+    private static class YTDCollectionCombiner extends Combiner<MonthAmountPair, SortedMap<Integer, Integer>> {
+
+        private final SortedMap<Integer, Integer> monthMap = new TreeMap<>();
 
         @Override
         public void reset() {
-            sum = 0;
+            monthMap.clear();
         }
 
         @Override
-        public void combine(Integer value) {
-            sum += value;
+        public void combine(MonthAmountPair value) {
+            monthMap.merge(value.getMonth(), value.getAmount(), Integer::sum);
         }
 
         @Override
-        public Integer finalizeChunk() {
-            return sum;
+        public SortedMap<Integer, Integer> finalizeChunk() {
+            return new TreeMap<>(monthMap);
         }
+
     }
 
 }
