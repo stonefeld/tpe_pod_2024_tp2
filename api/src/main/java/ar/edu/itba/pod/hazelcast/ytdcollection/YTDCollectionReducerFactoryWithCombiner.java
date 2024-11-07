@@ -15,7 +15,7 @@ public class YTDCollectionReducerFactoryWithCombiner implements ReducerFactory<A
 
     private static class YTDCollectionReducerWithCombiner extends Reducer<SortedMap<Integer, Integer>, SortedMap<Integer, Integer>> {
 
-        private SortedMap<Integer, Integer> amountByMonth = new TreeMap<>();
+        private final SortedMap<Integer, Integer> amountByMonth = new TreeMap<>();
 
         @Override
         public void beginReduce() {

@@ -180,3 +180,14 @@ Donde:
 
 - `-Dn`: Cantidad máxima de infracciones a mostrar.
 - `-Dagency`: Nombre de la agencia. Los espacios deben ser reemplazados por guiones bajos (`_`).
+
+# Testing
+
+Para realizar los tests, desarrollamos una serie de *scripts* que que permiten correr las queries con los archivos de
+prueba y se comparan los resultados con los archivos de salida esperados. Para correr los tests, se debe ejecutar:
+
+```bash
+$ sed -i 's/\r$//' tpe_tester.sh
+$ chmod +x tpe_tester.sh
+$ ./tpe_tester.sh
+```

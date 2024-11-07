@@ -32,16 +32,12 @@ public class IntegerPair implements DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-//        out.writeInt(max);
-//        out.writeInt(min);
         out.writeObject(max);
         out.writeObject(min);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-//        max = in.readInt();
-//        min = in.readInt();
         max = in.readObject();
         min = in.readObject();
     }

@@ -30,4 +30,4 @@ jobs:
     - name: Build with Maven
       run: mvn clean package
     - name: Test the project
-      run: chmod +x test.sh && ./test.sh
+      run: chmod +x tpe_tester.sh && ./tpe_tester.sh

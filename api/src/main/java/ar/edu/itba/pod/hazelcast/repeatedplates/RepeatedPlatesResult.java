@@ -6,4 +6,5 @@ public record RepeatedPlatesResult(String county, double percentage) {
     public String toString() {
         return county + ";" + percentage + "%";
     }
+
 }

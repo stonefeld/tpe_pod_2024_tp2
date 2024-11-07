@@ -15,11 +15,10 @@ public class YTDCollectionReducerFactory implements ReducerFactory<AgencyYearPai
 
     private static class YTDCollectionReducer extends Reducer<MonthAmountPair, SortedMap<Integer, Integer>> {
 
-        private SortedMap<Integer, Integer> amountByMonth = new TreeMap<>();
+        private final SortedMap<Integer, Integer> amountByMonth = new TreeMap<>();
 
         @Override
         public void reduce(MonthAmountPair value) {
-//            sum += value.getAmount();
             amountByMonth.merge(value.getMonth(), value.getAmount(), Integer::sum);
         }
 

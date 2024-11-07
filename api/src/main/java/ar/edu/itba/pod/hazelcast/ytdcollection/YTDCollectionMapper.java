@@ -15,12 +15,6 @@ public class YTDCollectionMapper implements Mapper<String, TicketRow, AgencyYear
                 new AgencyYearPair(agenciesMap.get(value.getAgency()), value.getIssueDate().getYear()),
                 new MonthAmountPair(value.getAmount(), value.getIssueDate().getMonthValue())
         );
-//        for (int i = value.getIssueDate().getMonthValue(); i <= 12; i++) {
-//            context.emit(
-//                    new AgencyMonthYearTriplet(agenciesMap.get(value.getAgency()), i, value.getIssueDate().getYear()),
-//                    new CollectedAmount(value.getAmount(), i == value.getIssueDate().getMonthValue())
-//            );
-//        }
     }
 
 }

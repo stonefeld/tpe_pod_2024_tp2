@@ -1,10 +1,13 @@
 package ar.edu.itba.pod.hazelcast.maxticketdifference;
 
-import java.util.*;
-
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Collator;
+
+import java.util.Comparator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class MaxTicketDifferenceCollator implements Collator<Map.Entry<String, IntegerPair>, SortedSet<MaxTicketDifferenceResult>> {
 

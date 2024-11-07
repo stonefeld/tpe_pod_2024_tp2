@@ -50,7 +50,7 @@ public abstract class Client {
         if (addresses.length == 0)
             throw new IllegalArgumentException("IP addresses are required");
 
-        mapper = switch(city) {
+        mapper = switch (city) {
             case "NYC" -> mapperNYC;
             case "CHI" -> mapperCHI;
             default -> throw new IllegalArgumentException("A valid city is required");
