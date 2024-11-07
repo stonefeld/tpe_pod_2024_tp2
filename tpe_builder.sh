@@ -51,6 +51,7 @@ if [ "$CLIENT" = true ]; then
 
   printf "Unpacking client ...\n\n"
   tar -xzf client/target/tpe2-g2-client-1.0-SNAPSHOT-bin.tar.gz -C bin/client --strip-components=1
+  sed -i 's/\r$//' bin/client/*.sh
   chmod +x bin/client/*.sh
 fi
 
@@ -68,6 +69,7 @@ if [ "$SERVER" = true ]; then
 
   printf "Unpacking server ...\n\n"
   tar -xzf server/target/tpe2-g2-server-1.0-SNAPSHOT-bin.tar.gz -C bin/server --strip-components=1
+  sed -i 's/\r$//' bin/server/*.sh
   chmod +x bin/server/*.sh
 fi
 
