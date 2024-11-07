@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -56,8 +57,9 @@ public class MaxTicketDifferenceClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
+                AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(line.split(";"));
+                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
                     ticketsMultiMap.put(ticketRow.getAgency(), ticketRow);
                 });
             }

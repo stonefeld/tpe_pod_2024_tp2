@@ -23,8 +23,8 @@ import java.util.function.Function;
 
 public abstract class Client {
 
-    private static Function<String[], TicketRow> mapperNYC = line -> new TicketRow(line[0], line[1], line[3], line[5], (int) Double.parseDouble(line[2]), line[4]);
-    private static Function<String[], TicketRow> mapperCHI = line -> new TicketRow(line[3], line[4], line[2], line[1], (int) Double.parseDouble(line[5]), line[0]);
+    private static Function<Pair<String[], Integer>, TicketRow> mapperNYC = pair -> new TicketRow(pair.left[0], pair.left[1], pair.left[3], pair.left[5], (int) Double.parseDouble(pair.left[2]), pair.right, pair.left[4]);
+    private static Function<Pair<String[], Integer>, TicketRow> mapperCHI = pair -> new TicketRow(pair.left[3], pair.left[4], pair.left[2], pair.left[1], (int) Double.parseDouble(pair.left[5]), pair.right, pair.left[0]);
 
     // Required by all queries
     protected static String[] addresses;
@@ -39,7 +39,7 @@ public abstract class Client {
     protected static String clusterName, clusterPassword;
 
     // Mapper para crear el TicketRow a partir del csv
-    protected static Function<String[], TicketRow> mapper;
+    protected static Function<Pair<String[], Integer>, TicketRow> mapper;
 
     public static void processProperties() {
         addresses = System.getProperty("addresses", "").split(";");
@@ -131,6 +131,18 @@ public abstract class Client {
             throw new IllegalArgumentException("Output path is required");
         System.setProperty("log4j.outputname", Paths.get(outPath, fileName).toString());
         return LoggerFactory.getLogger(clazz);
+    }
+
+    public static class Pair<L, R> {
+
+        private final L left;
+        private final R right;
+
+        public Pair(L left, R right) {
+            this.left = left;
+            this.right = right;
+        }
+
     }
 
 }

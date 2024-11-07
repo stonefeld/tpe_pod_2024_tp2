@@ -55,8 +55,9 @@ public class TotalTicketsClient extends Client {
 
             // Text File Reading and Key Value Source Loading
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
+                AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(line.split(";"));
+                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
                     ticketsMultiMap.put(new AgencyInfractionNamesPair(ticketRow.getAgency(), ticketRow.getInfractionId()), ticketRow);
                 });
             }
