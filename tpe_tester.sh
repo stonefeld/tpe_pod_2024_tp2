@@ -8,6 +8,7 @@ errors=0
 
 for file in ./*; do
     [ -f $file ] || continue
+    sed -i 's/\r$//' $file
     chmod +x $file
     printf "\n===== RUNNING TEST $file =====\n"
     $file || errors=1
