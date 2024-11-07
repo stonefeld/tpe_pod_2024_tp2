@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.hazelcast.common.CountyPlateInfractionTriplet;
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.repeatedplates.*;
 import com.hazelcast.client.HazelcastClient;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,8 +50,8 @@ public class RepeatedPlatesClient extends Client {
             hazelcastInstance.getMap("g2-infractions").destroy();
 
             // Key Value Source
-            MultiMap<LocalDate, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<LocalDate, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<LocalDate, CountyPlateInfractionTriplet> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            KeyValueSource<LocalDate, CountyPlateInfractionTriplet> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             // Job Tracker
             JobTracker jobTracker = hazelcastInstance.getJobTracker("g2-repeated-plates");
@@ -60,8 +62,9 @@ public class RepeatedPlatesClient extends Client {
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
-                    ticketsMultiMap.put(ticketRow.getIssueDate(), ticketRow);
+                    String[] split = line.split(";");
+                    LocalDate issueDate = LocalDate.parse(split[4], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    ticketsMultiMap.put(issueDate, new CountyPlateInfractionTriplet(id.getAndIncrement(), split[5], split[0], split[1]));
                 });
             }
 
@@ -69,7 +72,7 @@ public class RepeatedPlatesClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<LocalDate, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<LocalDate, CountyPlateInfractionTriplet> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<RepeatedPlatesResult>> future = job
                     .keyPredicate(new RepeatedPlatesKeyPredicate(from, to))
                     .mapper(new RepeatedPlatesMapper())
@@ -90,7 +93,7 @@ public class RepeatedPlatesClient extends Client {
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
-            Job<LocalDate, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<LocalDate, CountyPlateInfractionTriplet> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<RepeatedPlatesResult>> combinerFuture = combinerJob
                     .keyPredicate(new RepeatedPlatesKeyPredicate(from, to))
                     .mapper(new RepeatedPlatesMapper())

@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.hazelcast.common.InfractionAmountPair;
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.maxticketdifference.*;
 import com.hazelcast.client.HazelcastClient;
@@ -45,8 +46,8 @@ public class MaxTicketDifferenceClient extends Client {
             hazelcastInstance.getMap("g2-infractions").destroy();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<String, InfractionAmountPair> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            KeyValueSource<String, InfractionAmountPair> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
 
@@ -59,8 +60,9 @@ public class MaxTicketDifferenceClient extends Client {
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
-                    ticketsMultiMap.put(ticketRow.getAgency(), ticketRow);
+                    String[] split = line.split(";");
+                    double amount = Double.parseDouble(split[2]);
+                    ticketsMultiMap.put(split[3], new InfractionAmountPair(id.getAndIncrement(), split[1], (int) amount));
                 });
             }
 
@@ -75,7 +77,7 @@ public class MaxTicketDifferenceClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<String, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, InfractionAmountPair> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<MaxTicketDifferenceResult>> future = job
                     .keyPredicate(new MaxTicketDifferenceKeyPredicate(agency))
                     .mapper(new MaxTicketDifferenceMapper())
@@ -96,7 +98,7 @@ public class MaxTicketDifferenceClient extends Client {
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
-            Job<String, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, InfractionAmountPair> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<MaxTicketDifferenceResult>> combinerFuture = combinerJob
                     .keyPredicate(new MaxTicketDifferenceKeyPredicate(agency))
                     .mapper(new MaxTicketDifferenceMapper())

@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.hazelcast.common.AgencyIssueDateAmountTriplet;
 import ar.edu.itba.pod.hazelcast.common.TicketRow;
 import ar.edu.itba.pod.hazelcast.ytdcollection.*;
 import com.hazelcast.client.HazelcastClient;
@@ -16,6 +17,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,8 +43,8 @@ public class YTDCollectionClient extends Client {
             hazelcastInstance.getMap("g2-agencies").destroy();
 
             // Key Value Source
-            MultiMap<String, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<String, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<String, AgencyIssueDateAmountTriplet> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            KeyValueSource<String, AgencyIssueDateAmountTriplet> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
 
@@ -54,8 +57,10 @@ public class YTDCollectionClient extends Client {
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
-                    ticketsMultiMap.put(ticketRow.getAgency(), ticketRow);
+                    String[] split = line.split(";");
+                    LocalDate issueDate = LocalDate.parse(split[4], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    double amount = Double.parseDouble(split[2]);
+                    ticketsMultiMap.put(split[3], new AgencyIssueDateAmountTriplet(id.getAndIncrement(), split[3], issueDate, amount));
                 });
             }
 
@@ -71,7 +76,7 @@ public class YTDCollectionClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<String, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, AgencyIssueDateAmountTriplet> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> future = job
                     .keyPredicate(new YTDCollectionKeyPredicate())
                     .mapper(new YTDCollectionMapper())
@@ -92,7 +97,7 @@ public class YTDCollectionClient extends Client {
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
-            Job<String, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<String, AgencyIssueDateAmountTriplet> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<YTDCollectionResult>> combinerFuture = combinerJob
                     .keyPredicate(new YTDCollectionKeyPredicate())
                     .mapper(new YTDCollectionMapper())

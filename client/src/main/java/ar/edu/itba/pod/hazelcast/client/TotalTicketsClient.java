@@ -41,8 +41,8 @@ public class TotalTicketsClient extends Client {
             hazelcastInstance.getMap("g2-infractions").destroy();
 
             // Key Value Source
-            MultiMap<AgencyInfractionNamesPair, TicketRow> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
-            KeyValueSource<AgencyInfractionNamesPair, TicketRow> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
+            MultiMap<AgencyInfractionNamesPair, Integer> ticketsMultiMap = hazelcastInstance.getMultiMap("g2-tickets");
+            KeyValueSource<AgencyInfractionNamesPair, Integer> ticketRowKeyValueSource = KeyValueSource.fromMultiMap(ticketsMultiMap);
 
             IMap<String, String> infractionsMap = hazelcastInstance.getMap("g2-infractions");
             IMap<String, Integer> agenciesMap = hazelcastInstance.getMap("g2-agencies");
@@ -56,8 +56,8 @@ public class TotalTicketsClient extends Client {
             try (Stream<String> lines = Files.lines(Paths.get(inPath, "tickets" + city + ".csv"), StandardCharsets.UTF_8)) {
                 AtomicInteger id = new AtomicInteger();
                 lines.skip(1).forEach(line -> {
-                    TicketRow ticketRow = mapper.apply(new Pair<>(line.split(";"), id.getAndIncrement()));
-                    ticketsMultiMap.put(new AgencyInfractionNamesPair(ticketRow.getAgency(), ticketRow.getInfractionId()), ticketRow);
+                    String[] split = line.split(";");
+                    ticketsMultiMap.put(new AgencyInfractionNamesPair(split[3], split[1]), id.getAndIncrement());
                 });
             }
 
@@ -80,7 +80,7 @@ public class TotalTicketsClient extends Client {
             logger.info("Inicio del trabajo map/reduce");
 
             // MapReduce Job
-            Job<AgencyInfractionNamesPair, TicketRow> job = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<AgencyInfractionNamesPair, Integer> job = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<TotalTicketsResult>> future = job
                     .keyPredicate(new TotalTicketsKeyPredicate())
                     .mapper(new TotalTicketsMapper())
@@ -101,7 +101,7 @@ public class TotalTicketsClient extends Client {
             logger.info("Inicio del trabajo map/reduce (con Combiner)");
 
             // MapReduce Job
-            Job<AgencyInfractionNamesPair, TicketRow> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
+            Job<AgencyInfractionNamesPair, Integer> combinerJob = jobTracker.newJob(ticketRowKeyValueSource);
             JobCompletableFuture<SortedSet<TotalTicketsResult>> combinerFuture = combinerJob
                     .keyPredicate(new TotalTicketsKeyPredicate())
                     .mapper(new TotalTicketsMapper())

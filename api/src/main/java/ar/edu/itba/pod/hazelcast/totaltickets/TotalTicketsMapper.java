@@ -6,14 +6,14 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class TotalTicketsMapper implements Mapper<AgencyInfractionNamesPair, TicketRow, AgencyInfractionIdsPair, Long> {
+public class TotalTicketsMapper implements Mapper<AgencyInfractionNamesPair, Integer, AgencyInfractionIdsPair, Long> {
 
     private static final long ONE = 1L;
 
     @Override
-    public void map(AgencyInfractionNamesPair key, TicketRow value, Context<AgencyInfractionIdsPair, Long> context) {
+    public void map(AgencyInfractionNamesPair key, Integer value, Context<AgencyInfractionIdsPair, Long> context) {
         IMap<String, Integer> agenciesMap = Hazelcast.getHazelcastInstanceByName("g2-tpe2").getMap("g2-agencies");
-        context.emit(new AgencyInfractionIdsPair(agenciesMap.get(value.getAgency()), value.getInfractionId()), ONE);
+        context.emit(new AgencyInfractionIdsPair(agenciesMap.get(key.getAgency()), key.getInfractionId()), ONE);
     }
 
 }
